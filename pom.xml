@@ -38,13 +38,29 @@
 	</pluginRepositories>
 
 	<name>Performance Report</name>
-	<url>https://www.raketavdelningen.se/performance-report</url>
+	<url>https://tracker.raketavdelningen.se/projects/jmeter-performance/wiki</url>
 	<issueManagement>
 		<system>RedMine</system>
-		<url>https://tracker.raketavdelningen.se</url>
+		<url>https://tracker.raketavdelningen.se/projects/jmeter-performance</url>
 	</issueManagement>
 	<ciManagement>
 		<system>Jenkins</system>
 		<url>https://build.raketavdelningen.se</url>
 	</ciManagement>
+	<scm>
+		<connection>scm:git:git://src.raketavdelningen.se/patrik/performanceplugin.git</connection>
+		<url>https://src.raketavdelningen.se/patrik/performanceplugin/tree/master</url>
+	</scm>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
