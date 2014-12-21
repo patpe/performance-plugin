@@ -82,10 +82,19 @@ public class TimeBasedAggregatorTest {
     	assertEquals(1l, sample.getMin());
     	assertEquals(100l, sample.getMax());
     	assertEquals(100l, sample.getNrOfSamples());
+    	assertTrue(sample.isSuccess());
     	
     	PerformanceSample firstSample = samples.get(0);
     	long averageTime = firstSample.getTimestamp();
     	assertEquals(averageTime, sample.getTimestamp());
+    }
+    
+    @Test
+    public void testAggregateSamplesWithOneFailedSample() {
+    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(100);
+    	samples.get(99).setSuccess(false);
+    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	assertFalse(sample.isSuccess());
     }
     
     @Test
@@ -97,6 +106,7 @@ public class TimeBasedAggregatorTest {
     	assertEquals(1l, sample.getMin());
     	assertEquals(1l, sample.getMax());
     	assertEquals(1l, sample.getNrOfSamples());
+    	assertTrue(sample.isSuccess());
     	
     	PerformanceSample firstSample = samples.get(0);
     	long averageTime = firstSample.getTimestamp();
