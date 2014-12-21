@@ -13,6 +13,8 @@ import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
  */
 public abstract class Aggregator implements Describable<Aggregator> {
     
+    public abstract void initializeAggregatorFromFirstSample(PerformanceSample sample);
+    
     public abstract void startNewAggregationPeriod();
     
     public abstract boolean isSampleInCurrentAggregation(PerformanceSample sample);

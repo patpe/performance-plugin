@@ -21,6 +21,14 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <id>patrik</id>
+            <email>patrikp@gmail.com</email>
+            <name>Patrik Persson</name>
+        </developer>
+    </developers>
+
     <!-- get every artifact through repo.jenkins-ci.org, which proxies all 
         the artifacts that we need -->
     <repositories>

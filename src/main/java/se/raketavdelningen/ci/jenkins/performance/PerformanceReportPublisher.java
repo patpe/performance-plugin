@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.time.DateFormatUtils;
+
 import se.raketavdelningen.ci.jenkins.performance.aggregator.Aggregator;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.TimeBasedAggregator;
 import se.raketavdelningen.ci.jenkins.performance.group.LabelSampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.group.SampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.parser.JMeterCSVParser;
+import se.raketavdelningen.ci.jenkins.performance.parser.PerformanceReportParser;
 import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
 import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
 
@@ -77,16 +80,13 @@ public class PerformanceReportPublisher extends Recorder {
         
         for (FilePath file : files) {
             logger.format("Parsing file {0}", file.getName());
-            JMeterCSVParser parser = new JMeterCSVParser(file, containsHeader);
+            PerformanceReportParser parser = new JMeterCSVParser(file, containsHeader);
             PerformanceSample sample = parser.getNextSample();
             while (sample != null) {
                 if (aggregator.isSampleInCurrentAggregation(sample)) {
                     groupFunction.addSampleToGroup(sample);
                 } else {
-                    Set<String> groupKeys = groupFunction.getKeys();
-                    aggregateSamples(aggregatedSamples, groupKeys);
-                    groupFunction.clearGroups();
-                    aggregator.startNewAggregationPeriod();
+                    aggregateAndStartNewPeriod(aggregatedSamples);
                 }
                 sample = parser.getNextSample();
             }
@@ -103,9 +103,16 @@ public class PerformanceReportPublisher extends Recorder {
             }
         }
                 
-        // Add the performance action to the current build 
-
+        // TODO Add the performance action to the current build
         return true;
+    }
+
+    private void aggregateAndStartNewPeriod(
+            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples) {
+        Set<String> groupKeys = groupFunction.getKeys();
+        aggregateSamples(aggregatedSamples, groupKeys);
+        groupFunction.clearGroups();
+        aggregator.startNewAggregationPeriod();
     }
 
     private void saveXmlResults(String key,
@@ -114,8 +121,13 @@ public class PerformanceReportPublisher extends Recorder {
 
     private void printToBuildLog(String key,
             List<AggregatedPerformanceSample> samples, PrintStream logger) {
-        // TODO Auto-generated method stub
-        
+        logger.format("Result for {0}",  key);
+        logger.format("|Time\t|Min\t|Avg.\t|Max\t|Nr\t|");
+        for (AggregatedPerformanceSample sample : samples) {
+            logger.format("|{0}\t|{1}\t|{2}\t|{3}\t|{4}\t|", 
+                    DateFormatUtils.format(sample.getTimestamp(), DateFormatUtils.ISO_TIME_NO_T_FORMAT.getPattern()), 
+                    sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples());
+        }
     }
 
     private void aggregateSamples(
