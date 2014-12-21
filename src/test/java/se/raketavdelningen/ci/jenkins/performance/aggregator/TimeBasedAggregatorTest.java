@@ -10,6 +10,11 @@ import org.junit.Test;
 
 import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
 
+/**
+ * Test class for {@link TimeBasedAggregator}
+ * 
+ * @author Patrik
+ */
 public class TimeBasedAggregatorTest {
 
     Aggregator aggregator = new TimeBasedAggregator();
