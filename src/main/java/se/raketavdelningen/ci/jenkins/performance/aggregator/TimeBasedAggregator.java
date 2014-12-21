@@ -2,6 +2,7 @@ package se.raketavdelningen.ci.jenkins.performance.aggregator;
 
 import java.util.List;
 
+import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
 import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
 import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
 import hudson.model.Descriptor;
@@ -52,9 +53,15 @@ public class TimeBasedAggregator extends Aggregator {
     }
 
     private long calculateAggregatedTimestamp(List<PerformanceSample> samples) {
-        long firstTimestamp = samples.get(0).getTimestamp();
-        long lastTimestamp = samples.get(samples.size()).getTimestamp();
-        return (lastTimestamp + firstTimestamp) / 2;
+        if (samples.size() > 1) {
+	    	long firstTimestamp = samples.get(0).getTimestamp();
+	        long lastTimestamp = samples.get(samples.size() - 1).getTimestamp();
+	        return (lastTimestamp + firstTimestamp) / 2;
+        } else if (samples.size() == 1) {
+        	return samples.get(0).getTimestamp();
+        } else {
+        	throw new PerformanceReportException("No samples given to analyze");
+        }
     }
 
     @Override

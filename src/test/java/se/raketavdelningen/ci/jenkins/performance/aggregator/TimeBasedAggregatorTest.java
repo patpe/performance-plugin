@@ -1,6 +1,8 @@
 package se.raketavdelningen.ci.jenkins.performance.aggregator;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -8,6 +10,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
+import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
 import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
 
 /**
@@ -69,6 +73,62 @@ public class TimeBasedAggregatorTest {
         }
     }
     
+    @Test
+    public void testAggregateSamples() {
+    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(100);
+    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	assertEquals("key", sample.getSampleToken());
+    	assertEquals(50l, sample.getAverage());
+    	assertEquals(1l, sample.getMin());
+    	assertEquals(100l, sample.getMax());
+    	assertEquals(100l, sample.getNrOfSamples());
+    	
+    	PerformanceSample firstSample = samples.get(0);
+    	long averageTime = firstSample.getTimestamp();
+    	assertEquals(averageTime, sample.getTimestamp());
+    }
+    
+    @Test
+    public void testAggregateSample() {
+    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(1);
+    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	assertEquals("key", sample.getSampleToken());
+    	assertEquals(1l, sample.getAverage());
+    	assertEquals(1l, sample.getMin());
+    	assertEquals(1l, sample.getMax());
+    	assertEquals(1l, sample.getNrOfSamples());
+    	
+    	PerformanceSample firstSample = samples.get(0);
+    	long averageTime = firstSample.getTimestamp();
+    	assertEquals(averageTime, sample.getTimestamp());
+    }
+
+    @Test
+    public void testAggregateSamplesWithDifferentTimestamps() {
+    	List<PerformanceSample> samples = new ArrayList<>(2);
+    	PerformanceSample firstSample = new PerformanceSample(1000l, 1, true, 1, "label", "url");
+    	PerformanceSample secondSample = new PerformanceSample(2000l, 1, true, 1, "label", "url");
+    	PerformanceSample thirdSample = new PerformanceSample(3000l, 1, true, 1, "label", "url");
+    	samples.add(firstSample);
+    	samples.add(secondSample);
+    	samples.add(thirdSample);
+    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	
+    	assertEquals(2000l, sample.getTimestamp());
+    }
+    
+    @Test(expected = PerformanceReportException.class)
+    public void testAggregateEmptyList() {
+    	List<PerformanceSample> samples = initializeSampleList(0, 0);
+    	aggregator.aggregatePerformanceSamples(samples, "key");
+    }
+    
+    @Test
+    public void testGetDescriptor() {
+    	assertNotNull(aggregator.getDescriptor());
+    	assertNotNull(aggregator.getDescriptor().getDisplayName());
+    }
+    
     private List<PerformanceSample> initializeSampleListWithNoTimeDifference(int nrOfSamples) {
         return initializeSampleList(nrOfSamples, 0);
     }
@@ -82,7 +142,7 @@ public class TimeBasedAggregatorTest {
         long currentTimestamp = System.currentTimeMillis();
         for (int i = 0; i < nrOfSamples; i++) {
             currentTimestamp = currentTimestamp + i * secondsBetweenSamples * 1000;
-            samples.add(new PerformanceSample(currentTimestamp, 100, true, 1000, "label", "url"));
+            samples.add(new PerformanceSample(currentTimestamp, i + 1, true, 1000, "label", "url"));
         }
         return samples;
     }
