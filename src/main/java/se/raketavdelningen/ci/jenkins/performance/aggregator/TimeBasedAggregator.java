@@ -18,7 +18,7 @@ public class TimeBasedAggregator extends Aggregator {
     
     @Override
     public boolean isSampleInCurrentAggregation(PerformanceSample sample) {
-        return (nextTimestamp < sample.getTimestamp());
+        return (sample.getTimestamp() <= nextTimestamp);
     }
 
     @Override
@@ -59,7 +59,12 @@ public class TimeBasedAggregator extends Aggregator {
 
     @Override
     public void startNewAggregationPeriod() {
-        this.nextTimestamp = this.nextTimestamp + (minutesPerAggregation * 60 * 1000);
+        this.nextTimestamp = calculateNextTimestamp(nextTimestamp);
+    }
+    
+    @Override
+    public void initializeAggregatorFromFirstSample(PerformanceSample firstSample) {
+        this.nextTimestamp = calculateNextTimestamp(firstSample.getTimestamp());
     }
 
     @Override
@@ -68,8 +73,12 @@ public class TimeBasedAggregator extends Aggregator {
         
             @Override
             public String getDisplayName() {
-                return "Time Based Aggregator";
+                return "Time based aggregator (1 min interval)";
             }
         };
+    }
+    
+    private long calculateNextTimestamp(long currentNextTimestamp) {
+        return currentNextTimestamp + (minutesPerAggregation * 60 * 1000);
     }
 }
