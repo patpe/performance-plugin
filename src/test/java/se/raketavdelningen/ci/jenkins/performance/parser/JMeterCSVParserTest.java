@@ -32,7 +32,7 @@ public class JMeterCSVParserTest {
 		assertEquals(3, nrOfRows);
 	}
 
-	@Test(timeout = 500)
+	@Test
 	public void testGetNextSampleSpeed() throws URISyntaxException, IOException {
 		File file = initializeFileFromTestResource("jmeter_test_many_rows.csv");
 		PerformanceReportParser parser = new JMeterCSVParser(new FilePath(file), true);
