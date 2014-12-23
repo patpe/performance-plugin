@@ -17,4 +17,6 @@ public interface JMeterFieldNames {
     
     public static final String URL = "URL";
     
+    public static final String CSV_FILE_DELIMITER = ",";
+    
 }

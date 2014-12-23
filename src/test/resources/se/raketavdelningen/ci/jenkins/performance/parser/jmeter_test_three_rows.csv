@@ -1,0 +1,4 @@
+timeStamp,label,URL,elapsed,success,bytes
+1234567891,testLabel,testURL,11,true,12
+1234567892,testLabel,testURL,21,true,22
+1234567893,testLabel,testURL,31,true,32

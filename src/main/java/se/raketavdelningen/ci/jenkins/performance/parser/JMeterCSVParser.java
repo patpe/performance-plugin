@@ -37,7 +37,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
 
     private void setFieldIndexFromHeaderLine() throws IOException {
         String headerLine = reader.readLine();
-        String[] headers = headerLine.split(",");
+        String[] headers = headerLine.split(JMeterFieldNames.CSV_FILE_DELIMITER);
         String header;
         for (int headerCounter = 0; headerCounter < headers.length; headerCounter++) {
             header = headers[headerCounter];
@@ -50,7 +50,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
             } else if (JMeterFieldNames.BYTES.equals(header)) {
                 this.bytesIndex = headerCounter;
             } else if (JMeterFieldNames.SUCCESS.equals(header)) {
-                this.successIndex = 0;
+                this.successIndex = headerCounter;
             } else if (JMeterFieldNames.URL.equals(header)) {
                 this.urlIndex = headerCounter;
             }
@@ -66,7 +66,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
                 return null;
             }
             
-            String[] sampleValues = sampleLine.split(",");
+            String[] sampleValues = sampleLine.split(JMeterFieldNames.CSV_FILE_DELIMITER);
             return new PerformanceSample(
                     Long.valueOf(sampleValues[timestampIndex]),
                     Long.valueOf(sampleValues[elapsedIndex]),
