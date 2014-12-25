@@ -1,11 +1,12 @@
 package se.raketavdelningen.ci.jenkins.performance.aggregator;
 
+import hudson.model.Descriptor;
+
 import java.util.List;
 
 import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
 import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
 import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
-import hudson.model.Descriptor;
 
 /**
  * Aggregator that aggregates samples using time as the unit.

@@ -5,7 +5,7 @@ public class PerformanceReportException extends RuntimeException {
     /**
      * 
      */
-    private static final long serialVersionUID = -3899478315339744116L;
+    private static final long serialVersionUID = 8066289975356704873L;
 
     public PerformanceReportException() {
         super();
@@ -26,5 +26,5 @@ public class PerformanceReportException extends RuntimeException {
 
     public PerformanceReportException(Throwable cause) {
         super(cause);
-    }
+    }    
 }
