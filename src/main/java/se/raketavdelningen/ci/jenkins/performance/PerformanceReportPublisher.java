@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.time.DateFormatUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import se.raketavdelningen.ci.jenkins.performance.aggregator.Aggregator;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.TimeBasedAggregator;
@@ -45,6 +46,7 @@ public class PerformanceReportPublisher extends Recorder {
     
     private boolean saveAsXmlResults;
 
+    @DataBoundConstructor
     public PerformanceReportPublisher() {
         this.aggregator = new TimeBasedAggregator();
         this.groupFunction = new LabelSampleGroupFunction();
@@ -79,17 +81,19 @@ public class PerformanceReportPublisher extends Recorder {
         Map<String, List<AggregatedPerformanceSample>> aggregatedSamples = new HashMap<>();
         
         for (FilePath file : files) {
-            logger.format("Parsing file {0}", file.getName());
+            logger.format("Parsing file %1$s%n", file.getName());
             PerformanceReportParser parser = new JMeterCSVParser(file, containsHeader);
             PerformanceSample sample = parser.getNextSample();
+            aggregator.initializeAggregatorFromFirstSample(sample);
             while (sample != null) {
-                if (aggregator.isSampleInCurrentAggregation(sample)) {
-                    groupFunction.addSampleToGroup(sample);
-                } else {
-                    aggregateAndStartNewPeriod(aggregatedSamples);
+                if (isInNewAggregationPeriod(sample)) {
+                	aggregateAndStartNewPeriod(aggregatedSamples);
                 }
+                groupFunction.addSampleToGroup(sample);
                 sample = parser.getNextSample();
             }
+            aggregateAndStartNewPeriod(aggregatedSamples);
+            logger.format("Done parsing file %1s%n", file.getName());
         }
 
         Set<String> keys = aggregatedSamples.keySet();
@@ -107,7 +111,11 @@ public class PerformanceReportPublisher extends Recorder {
         return true;
     }
 
-    private void aggregateAndStartNewPeriod(
+    private boolean isInNewAggregationPeriod(PerformanceSample sample) {
+    	return !aggregator.isSampleInCurrentAggregation(sample);
+	}
+
+	private void aggregateAndStartNewPeriod(
             Map<String, List<AggregatedPerformanceSample>> aggregatedSamples) {
         Set<String> groupKeys = groupFunction.getKeys();
         aggregateSamples(aggregatedSamples, groupKeys);
@@ -121,10 +129,10 @@ public class PerformanceReportPublisher extends Recorder {
 
     private void printToBuildLog(String key,
             List<AggregatedPerformanceSample> samples, PrintStream logger) {
-        logger.format("Result for {0}",  key);
-        logger.format("|Time\t|Min\t|Avg.\t|Max\t|Nr\t|");
+        logger.format("Result for %1$s%n",  key);
+        logger.format("|Time|Min|Avg.|Max|Nr|%n");
         for (AggregatedPerformanceSample sample : samples) {
-            logger.format("|{0}\t|{1}\t|{2}\t|{3}\t|{4}\t|", 
+            logger.format("|%1$s|%2$s|%3$s|%4$s|%5$s|%n",
                     DateFormatUtils.format(sample.getTimestamp(), DateFormatUtils.ISO_TIME_NO_T_FORMAT.getPattern()), 
                     sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples());
         }
