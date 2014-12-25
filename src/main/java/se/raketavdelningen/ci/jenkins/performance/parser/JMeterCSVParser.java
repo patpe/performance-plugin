@@ -27,11 +27,15 @@ public class JMeterCSVParser extends PerformanceReportParser {
     
     private int urlIndex = 5;
     
-    public JMeterCSVParser(FilePath file, boolean containsHeader) throws IOException {
-        InputStream ins = file.read();
-        reader = new BufferedReader(new InputStreamReader(ins));
-        if (containsHeader) {
-            setFieldIndexFromHeaderLine();
+    public JMeterCSVParser(FilePath file, boolean containsHeader) {
+        try {
+            InputStream ins = file.read();
+            reader = new BufferedReader(new InputStreamReader(ins));
+            if (containsHeader) {
+                setFieldIndexFromHeaderLine();
+            }
+        } catch (Exception e) {
+            throw new PerformanceReportException(e);
         }
     }
 

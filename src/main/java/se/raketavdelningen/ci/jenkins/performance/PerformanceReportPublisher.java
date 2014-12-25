@@ -11,10 +11,13 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import se.raketavdelningen.ci.jenkins.performance.aggregator.Aggregator;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.TimeBasedAggregator;
+import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
 import se.raketavdelningen.ci.jenkins.performance.group.LabelSampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.group.SampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.parser.JMeterCSVParser;
@@ -44,7 +48,7 @@ public class PerformanceReportPublisher extends Recorder {
     
     private boolean printToBuildLog;
     
-    private boolean saveAsXmlResults;
+    private boolean saveBuildResults;
 
     @DataBoundConstructor
     public PerformanceReportPublisher() {
@@ -52,7 +56,7 @@ public class PerformanceReportPublisher extends Recorder {
         this.groupFunction = new LabelSampleGroupFunction();
         this.containsHeader = true;
         this.printToBuildLog = true;
-        this.saveAsXmlResults = false;
+        this.saveBuildResults = true;
     }
 
     @Extension
@@ -74,8 +78,7 @@ public class PerformanceReportPublisher extends Recorder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-            throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), filePattern);
         Map<String, List<AggregatedPerformanceSample>> aggregatedSamples = new HashMap<>();
@@ -102,8 +105,8 @@ public class PerformanceReportPublisher extends Recorder {
             if (printToBuildLog) {
                 printToBuildLog(key, samples, logger);
             }
-            if (saveAsXmlResults) {
-                saveXmlResults(key, samples, build.getRootDir().getAbsolutePath());
+            if (saveBuildResults) {
+                saveResultsToFile(key, samples, build.getRootDir().getAbsolutePath(), logger);
             }
         }
                 
@@ -123,18 +126,31 @@ public class PerformanceReportPublisher extends Recorder {
         aggregator.startNewAggregationPeriod();
     }
 
-    private void saveXmlResults(String key,
-            List<AggregatedPerformanceSample> samples, String absolutePath) {
+    private void saveResultsToFile(String key,
+            List<AggregatedPerformanceSample> samples, String absolutePath, PrintStream logger) {
+    	final String fileName = "performance_report_" + key + ".csv";
+    	final String format = "%1$s,%2$s,%3$s,%4$s,%5$s,%6$s%n";
+    	logger.format("Writing results to %1$s/%2$s", absolutePath, fileName);
+    	try (
+    			FileWriter writer = new FileWriter(new File(absolutePath, fileName)); 
+    			Formatter formatter = new Formatter(writer)) {
+    		for (AggregatedPerformanceSample sample : samples) {
+    			formatter.format(format, sample.getTimestamp(), sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
+    		}
+		} catch (IOException e) {
+			logger.format("Error occured when writing file %1$, message is %2$", fileName, e.getMessage());
+			throw new PerformanceReportException(e);
+		}
     }
 
     private void printToBuildLog(String key,
             List<AggregatedPerformanceSample> samples, PrintStream logger) {
         logger.format("Result for %1$s%n",  key);
-        logger.format("|Time|Min|Avg.|Max|Nr|%n");
+        logger.format("|%1$8s|%2$6s|%3$6s|%4$6s|%5$6s|%6$7s|%n", "Time", "Min", "Avg.", "Max", "Nr", "Success");
         for (AggregatedPerformanceSample sample : samples) {
-            logger.format("|%1$s|%2$s|%3$s|%4$s|%5$s|%n",
+            logger.format("|%1$8s|%2$6s|%3$6s|%4$6s|%5$6s|%6$7s|%n",
                     DateFormatUtils.format(sample.getTimestamp(), DateFormatUtils.ISO_TIME_NO_T_FORMAT.getPattern()), 
-                    sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples());
+                    sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
         }
     }
 
@@ -160,21 +176,25 @@ public class PerformanceReportPublisher extends Recorder {
     }
 
     /**
-     * Finds all 
+     * Finds all performance reports according to the given pattern in the current workspace
      * @param workspace
      * @param filePattern
      * @return
-     * @throws InterruptedException 
-     * @throws IOException
+     * @throws PerformanceReportException
      */
-    private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) throws IOException, InterruptedException {
+    private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) 
+            throws PerformanceReportException {
         List<FilePath> files = new ArrayList<FilePath>();
         String parts[] = filePattern.split("\\s*[;:,]+\\s*");
-        for (String path : parts) {
-            FilePath[] filePaths = workspace.list(path);
-            if (filePaths.length > 0) {
-                files.addAll(Arrays.asList(filePaths));
+        try {
+            for (String path : parts) {
+                FilePath[] filePaths = workspace.list(path);
+                if (filePaths.length > 0) {
+                    files.addAll(Arrays.asList(filePaths));
+                }
             }
+        } catch (IOException | InterruptedException e) {
+            throw new PerformanceReportException(e);
         }
         return files;
     }
