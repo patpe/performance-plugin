@@ -4,9 +4,9 @@ import hudson.model.Descriptor;
 
 import java.util.List;
 
-import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
-import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
+import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 /**
  * Aggregator that aggregates samples using time as the unit.
@@ -19,21 +19,22 @@ public class TimeBasedAggregator extends Aggregator {
 	private long nextTimestamp = -1;
 
 	@Override
-	public boolean isSampleInCurrentAggregation(PerformanceSample sample) {
+	public boolean isSampleInCurrentAggregation(Sample sample) {
 		return sample.getTimestamp() <= nextTimestamp;
 	}
 
 	@Override
-	public AggregatedPerformanceSample aggregatePerformanceSamples(
-			List<PerformanceSample> samples, String key) {
+	public AggregatedSample aggregatePerformanceSamples(
+			List<Sample> samples, String key) {
 		long aggregatedTimestamp = calculateAggregatedTimestamp(samples);
 		long samplesCounter = 0;
+		long samplesErrorCounter = 0;
 		long sumOfElapsed = 0;
 		boolean success = true;
 
 		long max = Long.MIN_VALUE;
 		long min = Long.MAX_VALUE;
-		for (PerformanceSample sample : samples) {
+		for (Sample sample : samples) {
 			long elapsed = sample.getElapsed();
 			if (max < elapsed) {
 				max = elapsed;
@@ -44,16 +45,17 @@ public class TimeBasedAggregator extends Aggregator {
 
 			sumOfElapsed+=sample.getElapsed();
 			success = (success && sample.isSuccess());
+			samplesErrorCounter = (sample.isSuccess() ? samplesErrorCounter : samplesErrorCounter + 1);
 			samplesCounter++;
 		}
 
 		long averageElapsed = sumOfElapsed / samplesCounter;
 
-		return new AggregatedPerformanceSample(aggregatedTimestamp, max, min, averageElapsed, 
-				success, samplesCounter, key);
+		return new AggregatedSample(aggregatedTimestamp, max, min, averageElapsed, 
+				success, samplesCounter, samplesErrorCounter, key);
 	}
 
-	private long calculateAggregatedTimestamp(List<PerformanceSample> samples) {
+	private long calculateAggregatedTimestamp(List<Sample> samples) {
 		if (samples.size() > 1) {
 			long firstTimestamp = samples.get(0).getTimestamp();
 			long lastTimestamp = samples.get(samples.size() - 1).getTimestamp();
@@ -61,7 +63,7 @@ public class TimeBasedAggregator extends Aggregator {
 		} else if (samples.size() == 1) {
 			return samples.get(0).getTimestamp();
 		} else {
-			throw new PerformanceReportException("No samples given to analyze");
+			throw new ReportException("No samples given to analyze");
 		}
 	}
 
@@ -71,7 +73,7 @@ public class TimeBasedAggregator extends Aggregator {
 	}
 
 	@Override
-	public void initializeAggregatorFromFirstSample(PerformanceSample firstSample) {
+	public void initializeAggregatorFromFirstSample(Sample firstSample) {
 		this.nextTimestamp = calculateNextTimestamp(firstSample.getTimestamp());
 	}
 

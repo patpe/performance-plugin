@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 /**
  * Test class for {@link UrlSampleGroupFunction}
@@ -24,7 +24,7 @@ public class UrlSampleGroupFunctionTest {
 	public void testGetSampleGroupKey() {
 		SampleGroupFunction group = new UrlSampleGroupFunction();
 		
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, "label", "url");
+		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		assertEquals("url", group.getSampleGroupKey(sample));
 	}
 
@@ -32,10 +32,10 @@ public class UrlSampleGroupFunctionTest {
 	public void testAddSampleToGroup() {
 		SampleGroupFunction group = new UrlSampleGroupFunction();
 		
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, "label", "url");
+		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		group.addSampleToGroup(sample);
 		
-		List<PerformanceSample> samples = group.getSamples("url");
+		List<Sample> samples = group.getSamples("url");
 		assertEquals(1, samples.size());
 	}
 	
@@ -47,7 +47,7 @@ public class UrlSampleGroupFunctionTest {
 		addSampleWithUrlToGroup("url2", group);
 		addSampleWithUrlToGroup("url3", group);
 		
-		List<PerformanceSample> samples = group.getSamples("url1");
+		List<Sample> samples = group.getSamples("url1");
 		assertEquals(1, samples.size());
 		assertEquals("url1", samples.get(0).getUrl());
 		
@@ -70,16 +70,16 @@ public class UrlSampleGroupFunctionTest {
 			addSampleWithUrlToGroup("url3", group);
 		}
 		
-		List<PerformanceSample> samples = group.getSamples("url1");
+		List<Sample> samples = group.getSamples("url1");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample: samples) {
+		for (Sample sample: samples) {
 			assertEquals("url1", sample.getUrl());
 		}
 	}
 	
 	private void addSampleWithUrlToGroup(String url,
 			SampleGroupFunction group) {
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, "label", url);
+		Sample sample = new Sample(1, 1, true, 1, "label", url);
 		group.addSampleToGroup(sample);
 	}
 
@@ -104,9 +104,9 @@ public class UrlSampleGroupFunctionTest {
 		addSampleWithUrlToGroup("url2", group);
 		addSampleWithUrlToGroup("url3", group);		
 		
-		List<PerformanceSample> samples = group.getSamples("url1");
+		List<Sample> samples = group.getSamples("url1");
 		assertEquals(1, samples.size());
-		PerformanceSample sample = samples.get(0);
+		Sample sample = samples.get(0);
 		assertEquals("url1", sample.getUrl());
 		
 		samples = group.getSamples("url2");
@@ -130,21 +130,21 @@ public class UrlSampleGroupFunctionTest {
 		}
 		addSampleWithUrlToGroup("url3", group);		
 		
-		List<PerformanceSample> samples = group.getSamples("url1");
+		List<Sample> samples = group.getSamples("url1");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample : samples) {
+		for (Sample sample : samples) {
 			assertEquals("url1", sample.getUrl());
 		}
 		
 		samples = group.getSamples("url2");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample : samples) {
+		for (Sample sample : samples) {
 			assertEquals("url2", sample.getUrl());
 		}
 		
 		samples = group.getSamples("url3");
 		assertEquals(1, samples.size());
-		PerformanceSample sample = samples.get(0);
+		Sample sample = samples.get(0);
 		assertEquals("url3", sample.getUrl());
 	}
 

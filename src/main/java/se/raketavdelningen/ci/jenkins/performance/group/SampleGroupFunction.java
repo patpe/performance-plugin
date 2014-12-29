@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 public abstract class SampleGroupFunction {
 
-    private Map<String, List<PerformanceSample>> samplesMap = new HashMap<>();
+    private Map<String, List<Sample>> samplesMap = new HashMap<>();
     
-    public final void addSampleToGroup(PerformanceSample sample) {
+    public final void addSampleToGroup(Sample sample) {
         String groupKey = getSampleGroupKey(sample);
-        List<PerformanceSample> samples = samplesMap.get(groupKey);
+        List<Sample> samples = samplesMap.get(groupKey);
         if (samples == null) {
             samples = new ArrayList<>();
             samplesMap.put(groupKey, samples);
@@ -22,13 +22,13 @@ public abstract class SampleGroupFunction {
         samples.add(sample);
     }
     
-    public abstract String getSampleGroupKey(PerformanceSample sample);
+    public abstract String getSampleGroupKey(Sample sample);
     
     public final Set<String> getKeys() {
         return samplesMap.keySet();
     }
     
-    public final List<PerformanceSample> getSamples(String key) {
+    public final List<Sample> getSamples(String key) {
         return samplesMap.get(key);
     }
     

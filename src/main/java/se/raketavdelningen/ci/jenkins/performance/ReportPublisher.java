@@ -3,7 +3,9 @@ package se.raketavdelningen.ci.jenkins.performance;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Action;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
@@ -13,41 +15,40 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import se.raketavdelningen.ci.jenkins.performance.action.ReportBuildAction;
+import se.raketavdelningen.ci.jenkins.performance.action.ReportProjectAction;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.Aggregator;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.TimeBasedAggregator;
-import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
+import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
 import se.raketavdelningen.ci.jenkins.performance.group.LabelSampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.group.SampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.parser.JMeterCSVParser;
-import se.raketavdelningen.ci.jenkins.performance.parser.PerformanceReportParser;
-import se.raketavdelningen.ci.jenkins.performance.report.PerformanceBuildEntry;
-import se.raketavdelningen.ci.jenkins.performance.report.PerformanceBuildReport;
-import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.parser.ReportParser;
+import se.raketavdelningen.ci.jenkins.performance.report.Report;
+import se.raketavdelningen.ci.jenkins.performance.report.ReportEntry;
+import se.raketavdelningen.ci.jenkins.performance.report.ReportLog;
+import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
+import se.raketavdelningen.ci.jenkins.performance.sample.SamplesList;
+import se.raketavdelningen.ci.jenkins.performance.sample.SamplesMap;
 
-public class PerformanceReportPublisher extends Recorder {
+public class ReportPublisher extends Recorder {
 
     private Aggregator aggregator;
 
@@ -61,16 +62,13 @@ public class PerformanceReportPublisher extends Recorder {
     
     private boolean saveBuildResults;
     
-    private JAXBContext jaxbCtx;
-
     @DataBoundConstructor
-    public PerformanceReportPublisher() throws JAXBException {
+    public ReportPublisher() throws JAXBException {
         this.aggregator = new TimeBasedAggregator();
         this.groupFunction = new LabelSampleGroupFunction();
         this.containsHeader = true;
         this.printToBuildLog = false;
-        this.saveBuildResults = true;        
-        this.jaxbCtx = JAXBContext.newInstance(PerformanceBuildReport.class);
+        this.saveBuildResults = true;
     }
 
     @Extension
@@ -83,7 +81,7 @@ public class PerformanceReportPublisher extends Recorder {
 
         @Override
         public String getDisplayName() {
-            return PerformanceReportConstants.PLUGIN_NAME;
+            return ReportConstants.PLUGIN_NAME;
         }
     }
 
@@ -92,85 +90,115 @@ public class PerformanceReportPublisher extends Recorder {
     }
 
     @Override
+    public Collection<Action> getProjectActions(AbstractProject<?, ?> project) {
+        Object build = project.getLastSuccessfulBuild();
+        if (build != null) {
+            ReportBuildAction action = project.getLastSuccessfulBuild().getAction(ReportBuildAction.class);
+            return Collections.<Action>singleton(new ReportProjectAction(action.getReport()));
+        }
+        return Collections.<Action>emptyList();
+    }
+    
+    @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+        if (build.getResult().isWorseOrEqualTo(Result.FAILURE)) {
+            return true;
+        }
+                
         PrintStream logger = listener.getLogger();
         List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), filePattern);
-        Map<String, List<AggregatedPerformanceSample>> aggregatedSamples = new HashMap<>();
+        SamplesMap samples = new SamplesMap();
         
         for (FilePath file : files) {
-            parseFile(logger, aggregatedSamples, file);
+            parseFile(logger, samples, file);
         }
-
-        PerformanceBuildReport report = getPerformanceBuildReportToUpdate(build);
-        Set<String> keys = aggregatedSamples.keySet();
-        for (String key : keys) {
-            PerformanceBuildEntry entry = handleSamplesByKey(build, logger, aggregatedSamples, key);
-            report.addEntry(entry);
-        }
-        persistBuildReport(report, build.getRootDir());
         
-        // TODO Add the performance action to the current build
+        Report report = getPerformanceReportToUpdate(build, listener);
+        Set<String> keys = samples.keySet();
+        ReportBuildAction action = new ReportBuildAction(samples, report, keys, build);
+        for (String key : keys) {
+            ReportEntry entry = handleSamplesByKey(build, logger, samples, key);
+            addEntryToLog(report, key, entry);
+        }        
+        build.addAction(action);
+        
         return true;
     }
 
-    private PerformanceBuildReport getPerformanceBuildReportToUpdate(AbstractBuild<?, ?> build) {
-        PerformanceBuildReport report;
-        try {
-            Run<?,?> previousSuccessfulBuild = build.getPreviousSuccessfulBuild();
-            if (previousSuccessfulBuild != null) {
-                File previousBuildDirectory = previousSuccessfulBuild.getRootDir();
-                File performanceBuildLog = new File(previousBuildDirectory, "performance_build.xml");
-                if (performanceBuildLog.exists()) {
-                    InputStream is = new FileInputStream(performanceBuildLog);
-                    Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
-                    report = (PerformanceBuildReport) unmarshaller.unmarshal(is);
-                } else {
-                    report = new PerformanceBuildReport();
-                }
-            } else {
-                report = new PerformanceBuildReport();
+    private void addEntryToLog(Report report, String key,
+            ReportEntry entry) {
+        ReportLog log = report.getReportLog(key);
+        if (log != null) {
+            log.addEntry(entry);
+        } else {
+            log = new ReportLog(key);
+            log.addEntry(entry);
+            report.addLog(log);
+        }
+    }
+
+    private Report getPerformanceReportToUpdate(AbstractBuild<?, ?> build, BuildListener listener) {
+        Report report;
+        Run<?,?> previousSuccessfulBuild = build.getPreviousSuccessfulBuild();
+        if (previousSuccessfulBuild != null) {
+            ReportBuildAction action = previousSuccessfulBuild.getAction(ReportBuildAction.class);
+            report = action.getReport();
+            if (report == null) {
+                report = new Report();
             }
-        } catch (FileNotFoundException | JAXBException e) {
-            throw new PerformanceReportException(e);
+        } else {
+            report = new Report();
         }
         return report;
     }
     
-    private void persistBuildReport(PerformanceBuildReport report, File currentBuildDir) {
-        File performanceBuildLog = new File(currentBuildDir, "performance_build.xml");
-        try {
-            Marshaller marshaller = jaxbCtx.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(report, performanceBuildLog);
-        } catch (JAXBException e) {
-            throw new PerformanceReportException(e);
-        }
-    }
-
-    private PerformanceBuildEntry handleSamplesByKey(AbstractBuild<?, ?> build,
+    private ReportEntry handleSamplesByKey(AbstractBuild<?, ?> build,
             PrintStream logger,
-            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples,
+            SamplesMap aggregatedSamples,
             String key) {
-        List<AggregatedPerformanceSample> samples = aggregatedSamples.get(key);
+        List<AggregatedSample> samples = aggregatedSamples.get(key);
         if (printToBuildLog) {
             printToBuildLog(key, samples, logger);
         }
         if (saveBuildResults) {
             saveResultsToFile(key, samples, build.getRootDir().getAbsolutePath(), logger);
         }
-        return new PerformanceBuildEntry(build.number, key, findMin(samples), calculateAverage(samples), findMax(samples), isSuccess(samples));
+        return new ReportEntry(
+                build.number, 
+                findMin(samples), 
+                calculateAverage(samples), 
+                findMax(samples), 
+                calculateNrOfSamples(samples),
+                calculateNrOfFailures(samples),
+                isSuccess(samples));
     }
 
-    private long calculateAverage(List<AggregatedPerformanceSample> samples) {
+    private long calculateNrOfFailures(List<AggregatedSample> samples) {
+        long totalNrOfFailures = 0;
+        for (AggregatedSample sample : samples) {
+            totalNrOfFailures+=sample.getNrOfSamples();
+        }
+        return totalNrOfFailures;
+    }
+
+    private long calculateNrOfSamples(List<AggregatedSample> samples) {
+        long totalNrOfSamples = 0;
+        for (AggregatedSample sample : samples) {
+            totalNrOfSamples+=sample.getNrOfSamples();
+        }
+        return totalNrOfSamples;
+    }
+
+    private long calculateAverage(List<AggregatedSample> samples) {
         long totalAverage = 0;
-        for (AggregatedPerformanceSample sample : samples) {
+        for (AggregatedSample sample : samples) {
             totalAverage+=sample.getAverage();
         }
         return totalAverage / (samples.size());
     }
     
-    private boolean isSuccess(List<AggregatedPerformanceSample> samples) {
-        for (AggregatedPerformanceSample sample : samples) {
+    private boolean isSuccess(List<AggregatedSample> samples) {
+        for (AggregatedSample sample : samples) {
             if (!sample.isSuccess()) {
                 return false;
             }
@@ -178,9 +206,9 @@ public class PerformanceReportPublisher extends Recorder {
         return true;
     }
 
-    private long findMin(List<AggregatedPerformanceSample> samples) {
+    private long findMin(List<AggregatedSample> samples) {
         long min = Long.MAX_VALUE;
-        for (AggregatedPerformanceSample sample : samples) {
+        for (AggregatedSample sample : samples) {
             if (sample.getMin() < min) {
                 min = sample.getMin();
             }
@@ -188,9 +216,9 @@ public class PerformanceReportPublisher extends Recorder {
         return min;
     }
 
-    private long findMax(List<AggregatedPerformanceSample> samples) {
+    private long findMax(List<AggregatedSample> samples) {
         long max = Long.MIN_VALUE;
-        for (AggregatedPerformanceSample sample : samples) {
+        for (AggregatedSample sample : samples) {
             if (max < sample.getMax()) {
                 max = sample.getMax();
             }
@@ -199,29 +227,29 @@ public class PerformanceReportPublisher extends Recorder {
     }
     
     private void parseFile(PrintStream logger,
-            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples,
+            SamplesMap samples,
             FilePath file) {
         logger.format("Parsing file %1$s%n", file.getName());
-        PerformanceReportParser parser = new JMeterCSVParser(file, containsHeader);
-        PerformanceSample sample = parser.getNextSample();
+        ReportParser parser = new JMeterCSVParser(file, containsHeader);
+        Sample sample = parser.getNextSample();
         aggregator.initializeAggregatorFromFirstSample(sample);
         while (sample != null) {
             if (isInNewAggregationPeriod(sample)) {
-            	aggregateAndStartNewPeriod(aggregatedSamples);
+            	aggregateAndStartNewPeriod(samples);
             }
             groupFunction.addSampleToGroup(sample);
             sample = parser.getNextSample();
         }
-        aggregateAndStartNewPeriod(aggregatedSamples);
+        aggregateAndStartNewPeriod(samples);
         logger.format("Done parsing file %1s%n", file.getName());
     }
 
-    private boolean isInNewAggregationPeriod(PerformanceSample sample) {
+    private boolean isInNewAggregationPeriod(Sample sample) {
     	return !aggregator.isSampleInCurrentAggregation(sample);
 	}
 
 	private void aggregateAndStartNewPeriod(
-            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples) {
+            SamplesMap aggregatedSamples) {
         Set<String> groupKeys = groupFunction.getKeys();
         aggregateSamples(aggregatedSamples, groupKeys);
         groupFunction.clearGroups();
@@ -229,27 +257,27 @@ public class PerformanceReportPublisher extends Recorder {
     }
 
     private void saveResultsToFile(String key,
-            List<AggregatedPerformanceSample> samples, String absolutePath, PrintStream logger) {
+            List<AggregatedSample> samples, String absolutePath, PrintStream logger) {
     	final String fileName = "performance_report_" + key + ".csv";
     	final String format = "%1$s,%2$s,%3$s,%4$s,%5$s,%6$s%n";
     	logger.format("Writing results to %1$s/%2$s%n", absolutePath, fileName);
     	try (
     			FileWriter writer = new FileWriter(new File(absolutePath, fileName)); 
     			Formatter formatter = new Formatter(writer)) {
-    		for (AggregatedPerformanceSample sample : samples) {
+    		for (AggregatedSample sample : samples) {
     			formatter.format(format, sample.getTimestamp(), sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
     		}
 		} catch (IOException e) {
 			logger.format("Error occured when writing file %1$, message is %2$%n", fileName, e.getMessage());
-			throw new PerformanceReportException(e);
+			throw new ReportException(e);
 		}
     }
 
     private void printToBuildLog(String key,
-            List<AggregatedPerformanceSample> samples, PrintStream logger) {
+            List<AggregatedSample> samples, PrintStream logger) {
         logger.format("Result for %1$s%n",  key);
         logger.format("|%1$8s|%2$6s|%3$6s|%4$6s|%5$6s|%6$7s|%n", "Time", "Min", "Avg.", "Max", "Nr", "Success");
-        for (AggregatedPerformanceSample sample : samples) {
+        for (AggregatedSample sample : samples) {
             logger.format("|%1$8s|%2$6s|%3$6s|%4$6s|%5$6s|%6$7s|%n",
                     DateFormatUtils.format(sample.getTimestamp(), DateFormatUtils.ISO_TIME_NO_T_FORMAT.getPattern()), 
                     sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
@@ -257,21 +285,21 @@ public class PerformanceReportPublisher extends Recorder {
     }
 
     private void aggregateSamples(
-            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples,
+            SamplesMap aggregatedSamples,
             Set<String> groupKeys) {
         for (String key : groupKeys) {
-            List<PerformanceSample> samples = groupFunction.getSamples(key);
-            AggregatedPerformanceSample aggregatedSample = aggregator.aggregatePerformanceSamples(samples, key);
+            List<Sample> samples = groupFunction.getSamples(key);
+            AggregatedSample aggregatedSample = aggregator.aggregatePerformanceSamples(samples, key);
             addSampleToKey(aggregatedSample, key, aggregatedSamples);
         }
     }
 
-    private void addSampleToKey(AggregatedPerformanceSample aggregatedSample,
+    private void addSampleToKey(AggregatedSample aggregatedSample,
             String key,
-            Map<String, List<AggregatedPerformanceSample>> aggregatedSamples) {
-        List<AggregatedPerformanceSample> samples = aggregatedSamples.get(key);
+            SamplesMap aggregatedSamples) {
+        SamplesList samples = aggregatedSamples.get(key);
         if (samples == null) {
-            samples = new ArrayList<>();
+            samples = new SamplesList();
             aggregatedSamples.put(key, samples);
         }
         samples.add(aggregatedSample);
@@ -282,10 +310,10 @@ public class PerformanceReportPublisher extends Recorder {
      * @param workspace
      * @param filePattern
      * @return
-     * @throws PerformanceReportException
+     * @throws ReportException
      */
     private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) 
-            throws PerformanceReportException {
+            throws ReportException {
         List<FilePath> files = new ArrayList<FilePath>();
         String parts[] = filePattern.split("\\s*[;:,]+\\s*");
         try {
@@ -296,7 +324,7 @@ public class PerformanceReportPublisher extends Recorder {
                 }
             }
         } catch (IOException | InterruptedException e) {
-            throw new PerformanceReportException(e);
+            throw new ReportException(e);
         }
         return files;
     }

@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 /**
  * Test class for {@link LabelSampleGroupFunction}
@@ -24,7 +24,7 @@ public class LabelSampleGroupFunctionTest {
 	public void testGetSampleGroupKey() {
 		SampleGroupFunction group = new LabelSampleGroupFunction();
 		
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, "label", "url");
+		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		assertEquals("label", group.getSampleGroupKey(sample));
 	}
 
@@ -32,10 +32,10 @@ public class LabelSampleGroupFunctionTest {
 	public void testAddSampleToGroup() {
 		SampleGroupFunction group = new LabelSampleGroupFunction();
 		
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, "label", "url");
+		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		group.addSampleToGroup(sample);
 		
-		List<PerformanceSample> samples = group.getSamples("label");
+		List<Sample> samples = group.getSamples("label");
 		assertEquals(1, samples.size());
 	}
 	
@@ -47,7 +47,7 @@ public class LabelSampleGroupFunctionTest {
 		addSampleWithLabelToGroup("label2", group);
 		addSampleWithLabelToGroup("label3", group);
 		
-		List<PerformanceSample> samples = group.getSamples("label1");
+		List<Sample> samples = group.getSamples("label1");
 		assertEquals(1, samples.size());
 		assertEquals("label1", samples.get(0).getLabel());
 		
@@ -70,16 +70,16 @@ public class LabelSampleGroupFunctionTest {
 			addSampleWithLabelToGroup("label3", group);
 		}
 		
-		List<PerformanceSample> samples = group.getSamples("label1");
+		List<Sample> samples = group.getSamples("label1");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample: samples) {
+		for (Sample sample: samples) {
 			assertEquals("label1", sample.getLabel());
 		}
 	}
 	
 	private void addSampleWithLabelToGroup(String label,
 			SampleGroupFunction group) {
-		PerformanceSample sample = new PerformanceSample(1, 1, true, 1, label, "url");
+		Sample sample = new Sample(1, 1, true, 1, label, "url");
 		group.addSampleToGroup(sample);
 	}
 
@@ -104,9 +104,9 @@ public class LabelSampleGroupFunctionTest {
 		addSampleWithLabelToGroup("label2", group);
 		addSampleWithLabelToGroup("label3", group);		
 		
-		List<PerformanceSample> samples = group.getSamples("label1");
+		List<Sample> samples = group.getSamples("label1");
 		assertEquals(1, samples.size());
-		PerformanceSample sample = samples.get(0);
+		Sample sample = samples.get(0);
 		assertEquals("label1", sample.getLabel());
 		
 		samples = group.getSamples("label2");
@@ -130,21 +130,21 @@ public class LabelSampleGroupFunctionTest {
 		}
 		addSampleWithLabelToGroup("label3", group);		
 		
-		List<PerformanceSample> samples = group.getSamples("label1");
+		List<Sample> samples = group.getSamples("label1");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample : samples) {
+		for (Sample sample : samples) {
 			assertEquals("label1", sample.getLabel());
 		}
 		
 		samples = group.getSamples("label2");
 		assertEquals(100, samples.size());
-		for (PerformanceSample sample : samples) {
+		for (Sample sample : samples) {
 			assertEquals("label2", sample.getLabel());
 		}
 		
 		samples = group.getSamples("label3");
 		assertEquals(1, samples.size());
-		PerformanceSample sample = samples.get(0);
+		Sample sample = samples.get(0);
 		assertEquals("label3", sample.getLabel());
 	}
 

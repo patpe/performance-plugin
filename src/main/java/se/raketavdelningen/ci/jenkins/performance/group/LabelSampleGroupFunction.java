@@ -1,11 +1,11 @@
 package se.raketavdelningen.ci.jenkins.performance.group;
 
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 public class LabelSampleGroupFunction extends SampleGroupFunction {
 
     @Override
-    public String getSampleGroupKey(PerformanceSample sample) {
+    public String getSampleGroupKey(Sample sample) {
         return sample.getLabel();
     }
 }

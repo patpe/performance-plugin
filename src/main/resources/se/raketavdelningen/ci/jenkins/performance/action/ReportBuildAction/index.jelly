@@ -1,0 +1,62 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.1-beta.4/Chart.min.js"></script>
+	<l:layout norefresh="true">
+    	<st:include it="${it.build}" page="sidepanel.jelly" />
+    	<l:main-panel>
+			<div>
+                <h1>${%JMeter Report}</h1>
+                <script type="text/javascript">
+                    Chart.defaults.global.animation = false;
+                </script>
+				<j:forEach var="samplesList" items="${it.samples}">
+				    <h4>${samplesList.key}</h4>
+                    <canvas id="${samplesList.key}-jmeter-chart" width="640" height="480"></canvas>
+                    <script type="text/javascript">
+                        var ctx = document.getElementById("${samplesList.key}-jmeter-chart").getContext("2d");
+                        var data = {
+                            labels: ${samplesList.value.getTimestampArray()},
+                            datasets: [
+                            {
+                                label: "Min",
+                                fillColor: "rgba(129,136,235,0.2)",
+                                strokeColor: "rgba(129,136,235,1)",
+                                pointColor: "rgba(129,136,235,1)",
+                                pointStrokeColor: "#fff",
+                                pointHighlightFill: "#fff",
+                                pointHighlightStroke: "rgba(129,136,235,1)",
+                                data: ${samplesList.value.getMinArray()}
+                            },
+                            {
+                                label: "Average",
+                                fillColor: "rgba(115,222,117,0.2)",
+                                strokeColor: "rgba(115,222,117,1)",
+                                pointColor: "rgba(115,222,117,1)",
+                                pointStrokeColor: "#fff",
+                                pointHighlightFill: "#fff",
+                                pointHighlightStroke: "rgba(115,222,117,1)",
+                                data: ${samplesList.value.getAverageArray()}
+                            },
+                            {
+                                label: "Max",
+                                fillColor: "rgba(235,143,129,0.2)",
+                                strokeColor: "rgba(235,143,129,1)",
+                                pointColor: "rgba(235,143,129,1)",
+                                pointStrokeColor: "#fff",
+                                pointHighlightFill: "#fff",
+                                pointHighlightStroke: "rgba(235,143,129,1)",
+                                data: ${samplesList.value.getMaxArray()}
+                            }]
+                        };
+                        new Chart(ctx).Line(data, {
+                            datasetFill: false,
+                            pointDot: false,
+                            bezierCurve: false,
+                            scaleShowGridLines: false
+                        });
+                    </script>
+                    <br />
+				</j:forEach>				
+			</div>
+    	</l:main-panel>
+  	</l:layout>		
+</j:jelly>

@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 
-public class JMeterCSVParser extends PerformanceReportParser {
+public class JMeterCSVParser extends ReportParser {
     
     private BufferedReader reader;
        
@@ -35,7 +35,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
                 setFieldIndexFromHeaderLine();
             }
         } catch (Exception e) {
-            throw new PerformanceReportException(e);
+            throw new ReportException(e);
         }
     }
 
@@ -62,7 +62,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
     }
 
     @Override
-    public PerformanceSample getNextSample() throws PerformanceReportException {
+    public Sample getNextSample() throws ReportException {
         try {
             String sampleLine = reader.readLine();
             if (sampleLine == null) {
@@ -71,7 +71,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
             }
             
             String[] sampleValues = sampleLine.split(JMeterFieldNames.CSV_FILE_DELIMITER);
-            return new PerformanceSample(
+            return new Sample(
                     Long.valueOf(sampleValues[timestampIndex]),
                     Long.valueOf(sampleValues[elapsedIndex]),
                     Boolean.valueOf(sampleValues[successIndex]),
@@ -79,7 +79,7 @@ public class JMeterCSVParser extends PerformanceReportParser {
                     sampleValues[labelIndex],
                     sampleValues[urlIndex]);
         } catch (IOException e) {
-            throw new PerformanceReportException(e);
+            throw new ReportException(e);
         }
     }
 }

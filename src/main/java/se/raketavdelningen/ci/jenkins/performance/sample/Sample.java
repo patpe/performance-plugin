@@ -1,6 +1,6 @@
 package se.raketavdelningen.ci.jenkins.performance.sample;
 
-public class PerformanceSample {
+public class Sample {
 
     private long timestamp;
     
@@ -14,7 +14,7 @@ public class PerformanceSample {
     
     private String url;
 
-    public PerformanceSample(long timestamp, long elapsed,
+    public Sample(long timestamp, long elapsed,
             boolean success, long bytes, String label, String url) {
         super();
         this.timestamp = timestamp;

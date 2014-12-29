@@ -13,16 +13,16 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 public class JMeterCSVParserTest {
 
 	@Test
 	public void testGetNextSample() throws URISyntaxException, IOException {
 		File file = initializeFileFromTestResource("jmeter_test_three_rows.csv");
-		PerformanceReportParser parser = new JMeterCSVParser(new FilePath(file), true);
+		ReportParser parser = new JMeterCSVParser(new FilePath(file), true);
 
-		PerformanceSample sample = parser.getNextSample();
+		Sample sample = parser.getNextSample();
 		int nrOfRows = 0;
 		while (sample != null) {
 			nrOfRows++;
@@ -35,9 +35,9 @@ public class JMeterCSVParserTest {
 	@Test
 	public void testGetNextSampleSpeed() throws URISyntaxException, IOException {
 		File file = initializeFileFromTestResource("jmeter_test_many_rows.csv");
-		PerformanceReportParser parser = new JMeterCSVParser(new FilePath(file), true);
+		ReportParser parser = new JMeterCSVParser(new FilePath(file), true);
 
-		PerformanceSample sample = parser.getNextSample();
+		Sample sample = parser.getNextSample();
 		int nrOfRows = 0;
 		while (sample != null) {
 			nrOfRows++;
@@ -50,9 +50,9 @@ public class JMeterCSVParserTest {
 	@Test
 	public void testJMeterCSVParser() throws IOException, URISyntaxException {
 		File file = initializeFileFromTestResource("jmeter_test1.csv");
-		PerformanceReportParser parser = new JMeterCSVParser(new FilePath(file), true);
+		ReportParser parser = new JMeterCSVParser(new FilePath(file), true);
 
-		PerformanceSample sample = parser.getNextSample();
+		Sample sample = parser.getNextSample();
 		assertNotNull(sample);
 		assertEquals(1234567890, sample.getTimestamp());
 		assertEquals("testLabel", sample.getLabel());

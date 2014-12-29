@@ -10,9 +10,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import se.raketavdelningen.ci.jenkins.performance.exception.PerformanceReportException;
-import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedPerformanceSample;
-import se.raketavdelningen.ci.jenkins.performance.sample.PerformanceSample;
+import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
+import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedSample;
+import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 /**
  * Test class for {@link TimeBasedAggregator}
@@ -25,49 +25,49 @@ public class TimeBasedAggregatorTest {
     
     @Test
     public void testIsSampleInCurrentAggregation() {
-        List<PerformanceSample> samples = initializeSampleListWithOneMinuteBetweenSamples(2);
+        List<Sample> samples = initializeSampleListWithOneMinuteBetweenSamples(2);
         aggregator.initializeAggregatorFromFirstSample(samples.get(0));
-        for (PerformanceSample sample : samples) {
+        for (Sample sample : samples) {
             assertTrue(aggregator.isSampleInCurrentAggregation(sample));
         }
     }
     
     @Test
     public void testInCurrentAggregationPeriodWithSamePeriod() {
-        List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(10);
+        List<Sample> samples = initializeSampleListWithNoTimeDifference(10);
         aggregator.initializeAggregatorFromFirstSample(samples.get(0));
-        for (PerformanceSample sample : samples) {
+        for (Sample sample : samples) {
             assertTrue(aggregator.isSampleInCurrentAggregation(sample));
         }
     }
     
     @Test
     public void testInCurrentAggregationPeriodWithSamplesEndingJustBeforeNextPeriod() {
-        List<PerformanceSample> samples = initializeSampleList(2, 59);
+        List<Sample> samples = initializeSampleList(2, 59);
         aggregator.initializeAggregatorFromFirstSample(samples.get(0));
-        for (PerformanceSample sample : samples) {
+        for (Sample sample : samples) {
             assertTrue(aggregator.isSampleInCurrentAggregation(sample));
         }
     }
     
     @Test
     public void testInCurrentAggregationPeriodWithSamplesEndingJustAfterNextPeriod() {
-        List<PerformanceSample> samples = initializeSampleList(2, 61);
+        List<Sample> samples = initializeSampleList(2, 61);
         aggregator.initializeAggregatorFromFirstSample(samples.get(0));
         assertTrue(aggregator.isSampleInCurrentAggregation(samples.get(0)));
         samples.remove(0);
-        for (PerformanceSample sample : samples) {
+        for (Sample sample : samples) {
             assertFalse(aggregator.isSampleInCurrentAggregation(sample));
         }
     }
 
     @Test
     public void testInCurrentAggregationPeriodWithMultipleSamples() {
-        List<PerformanceSample> samples = initializeSampleList(100, 70);
+        List<Sample> samples = initializeSampleList(100, 70);
         aggregator.initializeAggregatorFromFirstSample(samples.get(0));
         assertTrue(aggregator.isSampleInCurrentAggregation(samples.get(0)));
         samples.remove(0);
-        for (PerformanceSample sample : samples) {
+        for (Sample sample : samples) {
             assertFalse(aggregator.isSampleInCurrentAggregation(sample));
             aggregator.startNewAggregationPeriod();
         }
@@ -75,8 +75,8 @@ public class TimeBasedAggregatorTest {
     
     @Test
     public void testAggregateSamples() {
-    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(100);
-    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	List<Sample> samples = initializeSampleListWithNoTimeDifference(100);
+    	AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
     	assertEquals("key", sample.getSampleToken());
     	assertEquals(50l, sample.getAverage());
     	assertEquals(1l, sample.getMin());
@@ -84,23 +84,23 @@ public class TimeBasedAggregatorTest {
     	assertEquals(100l, sample.getNrOfSamples());
     	assertTrue(sample.isSuccess());
     	
-    	PerformanceSample firstSample = samples.get(0);
+    	Sample firstSample = samples.get(0);
     	long averageTime = firstSample.getTimestamp();
     	assertEquals(averageTime, sample.getTimestamp());
     }
     
     @Test
     public void testAggregateSamplesWithOneFailedSample() {
-    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(100);
+    	List<Sample> samples = initializeSampleListWithNoTimeDifference(100);
     	samples.get(99).setSuccess(false);
-    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
     	assertFalse(sample.isSuccess());
     }
     
     @Test
     public void testAggregateSample() {
-    	List<PerformanceSample> samples = initializeSampleListWithNoTimeDifference(1);
-    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	List<Sample> samples = initializeSampleListWithNoTimeDifference(1);
+    	AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
     	assertEquals("key", sample.getSampleToken());
     	assertEquals(1l, sample.getAverage());
     	assertEquals(1l, sample.getMin());
@@ -108,28 +108,28 @@ public class TimeBasedAggregatorTest {
     	assertEquals(1l, sample.getNrOfSamples());
     	assertTrue(sample.isSuccess());
     	
-    	PerformanceSample firstSample = samples.get(0);
+    	Sample firstSample = samples.get(0);
     	long averageTime = firstSample.getTimestamp();
     	assertEquals(averageTime, sample.getTimestamp());
     }
 
     @Test
     public void testAggregateSamplesWithDifferentTimestamps() {
-    	List<PerformanceSample> samples = new ArrayList<>(2);
-    	PerformanceSample firstSample = new PerformanceSample(1000l, 1, true, 1, "label", "url");
-    	PerformanceSample secondSample = new PerformanceSample(2000l, 1, true, 1, "label", "url");
-    	PerformanceSample thirdSample = new PerformanceSample(3000l, 1, true, 1, "label", "url");
+    	List<Sample> samples = new ArrayList<>(2);
+    	Sample firstSample = new Sample(1000l, 1, true, 1, "label", "url");
+    	Sample secondSample = new Sample(2000l, 1, true, 1, "label", "url");
+    	Sample thirdSample = new Sample(3000l, 1, true, 1, "label", "url");
     	samples.add(firstSample);
     	samples.add(secondSample);
     	samples.add(thirdSample);
-    	AggregatedPerformanceSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
+    	AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "key");
     	
     	assertEquals(2000l, sample.getTimestamp());
     }
     
-    @Test(expected = PerformanceReportException.class)
+    @Test(expected = ReportException.class)
     public void testAggregateEmptyList() {
-    	List<PerformanceSample> samples = initializeSampleList(0, 0);
+    	List<Sample> samples = initializeSampleList(0, 0);
     	aggregator.aggregatePerformanceSamples(samples, "key");
     }
     
@@ -139,20 +139,20 @@ public class TimeBasedAggregatorTest {
     	assertNotNull(aggregator.getDescriptor().getDisplayName());
     }
     
-    private List<PerformanceSample> initializeSampleListWithNoTimeDifference(int nrOfSamples) {
+    private List<Sample> initializeSampleListWithNoTimeDifference(int nrOfSamples) {
         return initializeSampleList(nrOfSamples, 0);
     }
     
-    private List<PerformanceSample> initializeSampleListWithOneMinuteBetweenSamples(int nrOfSamples) {
+    private List<Sample> initializeSampleListWithOneMinuteBetweenSamples(int nrOfSamples) {
         return initializeSampleList(nrOfSamples, 60);
     }
     
-    private List<PerformanceSample> initializeSampleList(int nrOfSamples, int secondsBetweenSamples) {
-        List<PerformanceSample> samples = new ArrayList<>(nrOfSamples);
+    private List<Sample> initializeSampleList(int nrOfSamples, int secondsBetweenSamples) {
+        List<Sample> samples = new ArrayList<>(nrOfSamples);
         long currentTimestamp = System.currentTimeMillis();
         for (int i = 0; i < nrOfSamples; i++) {
             currentTimestamp = currentTimestamp + i * secondsBetweenSamples * 1000;
-            samples.add(new PerformanceSample(currentTimestamp, i + 1, true, 1000, "label", "url"));
+            samples.add(new Sample(currentTimestamp, i + 1, true, 1000, "label", "url"));
         }
         return samples;
     }

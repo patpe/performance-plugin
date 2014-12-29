@@ -1,6 +1,6 @@
 package se.raketavdelningen.ci.jenkins.performance.sample;
 
-public class AggregatedPerformanceSample {
+public class AggregatedSample {
 
     private long timestamp;
     
@@ -14,10 +14,12 @@ public class AggregatedPerformanceSample {
     
     private long nrOfSamples;
     
+    private long nrOfFailures;
+    
     private String key;
 
-    public AggregatedPerformanceSample(long timestamp, long max, long min,
-            long average, boolean success, long nrOfSamples, String key) {
+    public AggregatedSample(long timestamp, long max, long min,
+            long average, boolean success, long nrOfSamples, long nrOfFailures, String key) {
         super();
         this.timestamp = timestamp;
         this.max = max;
@@ -25,6 +27,7 @@ public class AggregatedPerformanceSample {
         this.average = average;
         this.success = success;
         this.nrOfSamples = nrOfSamples;
+        this.nrOfFailures = nrOfFailures;
         this.key = key;
     }
 
@@ -82,6 +85,14 @@ public class AggregatedPerformanceSample {
 
     public void setNrOfSamples(long nrOfSamples) {
         this.nrOfSamples = nrOfSamples;
+    }
+
+    public long getNrOfFailures() {
+        return nrOfFailures;
+    }
+
+    public void setNrOfFailures(long nrOfFailures) {
+        this.nrOfFailures = nrOfFailures;
     }
 
     public String getSampleToken() {
