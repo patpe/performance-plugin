@@ -116,7 +116,7 @@ public class ReportPublisher extends Recorder {
         }
         
         Report report = getPerformanceReportToUpdate(build);
-        ReportBuildAction action = new ReportBuildAction(samples, report);
+        ReportBuildAction action = new ReportBuildAction(samples, report, build.getProject());
         Set<String> keys = samples.keySet();
         for (String key : keys) {
             ReportEntry entry = handleSamplesByKey(build, logger, samples, key);

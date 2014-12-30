@@ -23,7 +23,7 @@ public class ReportBuildActionTest {
         Report report = new Report();
         report.addLog(new ReportLog("key1"));
         
-        ReportBuildAction action = new ReportBuildAction(samples, report);
+        ReportBuildAction action = new ReportBuildAction(samples, report, null);
         assertEquals(report, action.getReport());
         assertEquals(samples, action.getSamples());
     }
@@ -39,7 +39,7 @@ public class ReportBuildActionTest {
         SamplesMap samples = new SamplesMap();
         samples.put("key1", list);
 
-        ReportBuildAction action = new ReportBuildAction(samples, null);
+        ReportBuildAction action = new ReportBuildAction(samples, null, null);
         SamplesMap map = action.getSamples();
         assertNotNull(map);
         assertEquals(1, map.size());
@@ -52,7 +52,7 @@ public class ReportBuildActionTest {
         Report report = new Report();
         report.addLog(new ReportLog("key1"));
         
-        ReportBuildAction action = new ReportBuildAction(null,  report);
+        ReportBuildAction action = new ReportBuildAction(null, report, null);
         
         Report r = action.getReport();
         assertNotNull(r);
@@ -62,20 +62,19 @@ public class ReportBuildActionTest {
 
     @Test
     public void testGetIconFileName() {
-        ReportBuildAction action = new ReportBuildAction(null,  null);
+        ReportBuildAction action = new ReportBuildAction(null, null, null);
         assertEquals(ReportConstants.PLUGIN_ICON, action.getIconFileName());
     }
 
     @Test
     public void testGetDisplayName() {
-        ReportBuildAction action = new ReportBuildAction(null,  null);
+        ReportBuildAction action = new ReportBuildAction(null, null, null);
         assertEquals(ReportConstants.PLUGIN_NAME, action.getDisplayName());
     }
 
     @Test
     public void testGetUrlName() {
-        ReportBuildAction action = new ReportBuildAction(null,  null);
+        ReportBuildAction action = new ReportBuildAction(null, null, null);
         assertEquals(ReportConstants.PLUGIN_URL, action.getUrlName());
     }
-
 }
