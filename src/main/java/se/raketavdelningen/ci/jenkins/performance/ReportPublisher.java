@@ -114,7 +114,7 @@ public class ReportPublisher extends Recorder {
             parseFile(logger, samples, file);
         }
         
-        Report report = getPerformanceReportToUpdate(build, listener);
+        Report report = getPerformanceReportToUpdate(build);
         ReportBuildAction action = new ReportBuildAction(samples, report);
         Set<String> keys = samples.keySet();
         for (String key : keys) {
@@ -138,7 +138,7 @@ public class ReportPublisher extends Recorder {
         }
     }
 
-    private Report getPerformanceReportToUpdate(AbstractBuild<?, ?> build, BuildListener listener) {
+    private Report getPerformanceReportToUpdate(AbstractBuild<?, ?> build) {
         Report report;
         Run<?,?> previousSuccessfulBuild = build.getPreviousSuccessfulBuild();
         if (previousSuccessfulBuild != null) {

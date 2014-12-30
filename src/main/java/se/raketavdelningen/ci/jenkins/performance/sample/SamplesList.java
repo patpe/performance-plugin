@@ -13,16 +13,22 @@ public class SamplesList extends ArrayList<AggregatedSample> {
      */
     private static final long serialVersionUID = 6051136143483379711L;
     
-    private static final DateFormat format = new SimpleDateFormat("HH:mm");
+    private static final DateFormat LABEL_FORMAT = new SimpleDateFormat("HH:mm");
+    
+    private static final int EMPTY = 0;
+    
+    private static final int ONE_ELEMENT = 1;
+    
+    private static final int TWO_ELEMENTS = 2;
     
     public String getTimestampArray() {
-        if (size() == 0) {
+        if (size() == EMPTY) {
             return "[]";
-        } else if (this.size() == 1) {
+        } else if (this.size() == ONE_ELEMENT) {
             Date date = new Date();
             date.setTime(get(0).getTimestamp());
             return "[" + createDateLabel(date) + "]";
-        } else if (size() == 2) {
+        } else if (size() == TWO_ELEMENTS) {
             Date date = new Date();
             date.setTime(get(0).getTimestamp());
             String[] result = new String[2];
@@ -49,7 +55,7 @@ public class SamplesList extends ArrayList<AggregatedSample> {
     }
 
     private String createDateLabel(Date date) {
-        return "\"" + format.format(date) + "\"";
+        return "\"" + LABEL_FORMAT.format(date) + "\"";
     }
     
     public String getMinArray() {
