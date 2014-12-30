@@ -94,7 +94,8 @@ public class ReportPublisher extends Recorder {
         Object build = project.getLastSuccessfulBuild();
         if (build != null) {
             ReportBuildAction action = project.getLastSuccessfulBuild().getAction(ReportBuildAction.class);
-            return Collections.<Action>singleton(new ReportProjectAction(action.getReport()));
+            Report report = (action != null ? action.getReport() : new Report());
+            return Collections.<Action>singleton(new ReportProjectAction(report));
         }
         return Collections.<Action>emptyList();
     }
