@@ -11,6 +11,7 @@ public class Report extends HashMap<String, ReportLog> {
     private static final long serialVersionUID = 8280839808371485548L;
 
     public Report() {
+        super();
     }
     
     public Set<String> getReportKeys() {

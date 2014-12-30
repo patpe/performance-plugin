@@ -65,7 +65,6 @@ public class ReportEntry {
         this.max = max;
     }
  
-//    @XmlElement(name = "nrofsamples")
     public long getNrOfSamples() {
         return nrOfSamples;
     }
