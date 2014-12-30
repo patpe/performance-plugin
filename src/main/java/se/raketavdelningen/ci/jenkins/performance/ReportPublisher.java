@@ -63,7 +63,7 @@ public class ReportPublisher extends Recorder {
     private boolean saveBuildResults;
     
     @DataBoundConstructor
-    public ReportPublisher() throws JAXBException {
+    public ReportPublisher() {
         this.aggregator = new TimeBasedAggregator();
         this.groupFunction = new LabelSampleGroupFunction();
         this.containsHeader = true;
@@ -236,8 +236,7 @@ public class ReportPublisher extends Recorder {
             SamplesMap samples,
             FilePath file) {
         logger.format("Parsing file %1$s%n", file.getName());
-        try {
-            ReportParser parser = new JMeterCSVParser(file, containsHeader);
+        try (ReportParser parser = new JMeterCSVParser(file, containsHeader)) {
             Sample sample = parser.getNextSample();
             aggregator.initializeAggregatorFromFirstSample(sample);
             while (sample != null) {

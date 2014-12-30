@@ -66,7 +66,6 @@ public class JMeterCSVParser extends ReportParser {
         try {
             String sampleLine = reader.readLine();
             if (sampleLine == null) {
-                reader.close();
                 return null;
             }
             
@@ -80,6 +79,17 @@ public class JMeterCSVParser extends ReportParser {
                     sampleValues[urlIndex]);
         } catch (IOException e) {
             throw new ReportException(e);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (Exception e) {
+                // Ignore...
+            }
         }
     }
 }
