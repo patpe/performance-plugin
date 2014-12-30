@@ -23,16 +23,16 @@ public class ReportProjectAction implements Action {
 
     @Override
     public String getIconFileName() {
-        return ReportConstants.PLUGIN_ICON;
+        return null;
     }
 
     @Override
     public String getDisplayName() {
-        return ReportConstants.PLUGIN_NAME;
+        return null;
     }
 
     @Override
     public String getUrlName() {
-        return ReportConstants.PLUGIN_URL;
+        return null;
     }
 }

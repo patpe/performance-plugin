@@ -2,6 +2,7 @@ package se.raketavdelningen.ci.jenkins.performance.action;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -41,18 +42,18 @@ public class ReportProjectActionTest {
     @Test
     public void testGetIconFileName() {
         ReportProjectAction action = new ReportProjectAction(new Report());
-        assertEquals(ReportConstants.PLUGIN_ICON, action.getIconFileName());
+        assertNull(action.getIconFileName());
     }
 
     @Test
     public void testGetDisplayName() {
         ReportProjectAction action = new ReportProjectAction(new Report());
-        assertEquals(ReportConstants.PLUGIN_NAME, action.getDisplayName());
+        assertNull(action.getDisplayName());
     }
 
     @Test
     public void testGetUrlName() {
         ReportProjectAction action = new ReportProjectAction(new Report());
-        assertEquals(ReportConstants.PLUGIN_URL, action.getUrlName());
+        assertNull(action.getUrlName());
     }
 }
