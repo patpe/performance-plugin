@@ -232,18 +232,22 @@ public class ReportPublisher extends Recorder {
             SamplesMap samples,
             FilePath file) {
         logger.format("Parsing file %1$s%n", file.getName());
-        ReportParser parser = new JMeterCSVParser(file, containsHeader);
-        Sample sample = parser.getNextSample();
-        aggregator.initializeAggregatorFromFirstSample(sample);
-        while (sample != null) {
-            if (isInNewAggregationPeriod(sample)) {
-            	aggregateAndStartNewPeriod(samples);
+        try {
+            ReportParser parser = new JMeterCSVParser(file, containsHeader);
+            Sample sample = parser.getNextSample();
+            aggregator.initializeAggregatorFromFirstSample(sample);
+            while (sample != null) {
+                if (isInNewAggregationPeriod(sample)) {
+                	aggregateAndStartNewPeriod(samples);
+                }
+                groupFunction.addSampleToGroup(sample);
+                sample = parser.getNextSample();
             }
-            groupFunction.addSampleToGroup(sample);
-            sample = parser.getNextSample();
+            aggregateAndStartNewPeriod(samples);
+            logger.format("Done parsing file %1s%n", file.getName());
+        } catch (Exception e) {
+            logger.format("Couldn't parse file %1s, skipping. Message was %2s%n", file.getName(), e.getMessage());
         }
-        aggregateAndStartNewPeriod(samples);
-        logger.format("Done parsing file %1s%n", file.getName());
     }
 
     private boolean isInNewAggregationPeriod(Sample sample) {
