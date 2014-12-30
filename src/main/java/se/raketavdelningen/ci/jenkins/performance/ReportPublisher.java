@@ -144,8 +144,12 @@ public class ReportPublisher extends Recorder {
         Run<?,?> previousSuccessfulBuild = build.getPreviousSuccessfulBuild();
         if (previousSuccessfulBuild != null) {
             ReportBuildAction action = previousSuccessfulBuild.getAction(ReportBuildAction.class);
-            report = action.getReport();
-            if (report == null) {
+            if (action != null) {
+                report = action.getReport();
+                if (report == null) {
+                    report = new Report();
+                }
+            } else {
                 report = new Report();
             }
         } else {
