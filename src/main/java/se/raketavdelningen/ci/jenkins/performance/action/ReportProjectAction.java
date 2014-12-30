@@ -2,6 +2,7 @@ package se.raketavdelningen.ci.jenkins.performance.action;
 
 import hudson.model.Action;
 import se.raketavdelningen.ci.jenkins.performance.ReportConstants;
+import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
 import se.raketavdelningen.ci.jenkins.performance.report.Report;
 
 public class ReportProjectAction implements Action {
@@ -10,6 +11,9 @@ public class ReportProjectAction implements Action {
     
     public ReportProjectAction(Report report) {
         super();
+        if (report == null) {
+            throw new ReportException("Report can't be null");
+        }
         this.report = report;
     }
     
@@ -19,7 +23,7 @@ public class ReportProjectAction implements Action {
 
     @Override
     public String getIconFileName() {
-        return null;
+        return ReportConstants.PLUGIN_ICON;
     }
 
     @Override

@@ -101,11 +101,12 @@ public class ReportPublisher extends Recorder {
     
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-        if (build.getResult().isWorseOrEqualTo(Result.FAILURE)) {
-            return true;
-        }
-                
         PrintStream logger = listener.getLogger();
+        if (build.getResult().isWorseOrEqualTo(Result.FAILURE)) {
+            logger.println("Skipping parsing JMeter result files since result is equal to or worse than Failure");
+            return true;
+        }                
+        
         List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), filePattern);
         SamplesMap samples = new SamplesMap();
         
@@ -114,8 +115,8 @@ public class ReportPublisher extends Recorder {
         }
         
         Report report = getPerformanceReportToUpdate(build, listener);
+        ReportBuildAction action = new ReportBuildAction(samples, report);
         Set<String> keys = samples.keySet();
-        ReportBuildAction action = new ReportBuildAction(samples, report, keys, build);
         for (String key : keys) {
             ReportEntry entry = handleSamplesByKey(build, logger, samples, key);
             addEntryToLog(report, key, entry);
