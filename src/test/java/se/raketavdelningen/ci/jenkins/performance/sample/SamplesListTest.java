@@ -2,14 +2,20 @@ package se.raketavdelningen.ci.jenkins.performance.sample;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 
 public class SamplesListTest {
 
     /**
-     * This is 3.00PM, 12/30 2014 
+     * This is 3.00PM, 12/30 2014 CET
      */
     private static final Long DEFAULT_TIMESTAMP = new Long(1419948054990l);
+    
+    private static final DateFormat format = new SimpleDateFormat("HH:mm");
 
     @Test
     public void testGetTimestampArray() {
@@ -22,7 +28,8 @@ public class SamplesListTest {
         SamplesList list = new SamplesList();
         AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, true, 1000, 0, "key1");
         list.add(sample);
-        assertEquals("[\"15:00\"]", list.getTimestampArray());
+        String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
+        assertEquals("[\"" + timestamp + "\"]", list.getTimestampArray());
     }
 
     @Test
@@ -32,7 +39,9 @@ public class SamplesListTest {
         list.add(sample);
         sample = new AggregatedSample(DEFAULT_TIMESTAMP + 60*1000, 20, 1, 10, true, 1000, 0, "key1");
         list.add(sample);
-        assertEquals("[\"15:00\", \"15:01\"]", list.getTimestampArray());
+        String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
+        String secondTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 60*1000));
+        assertEquals("[\"" + timestamp + "\", \"" + secondTimestamp + "\"]", list.getTimestampArray());
     }
 
     @Test
@@ -42,7 +51,10 @@ public class SamplesListTest {
             AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, true, 1000, 0, "key1");
             list.add(sample);
         }
-        assertEquals("[\"15:00\", \"\", \"15:02\", \"\", \"\", \"15:05\"]", list.getTimestampArray());
+        String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
+        String secondTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 2*60*1000));
+        String thirdTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 5*60*1000));
+        assertEquals("[\"" + timestamp + "\", \"\", \"" + secondTimestamp + "\", \"\", \"\", \"" + thirdTimestamp + "\"]", list.getTimestampArray());
     }
 
     @Test
@@ -52,7 +64,10 @@ public class SamplesListTest {
             AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, true, 1000, 0, "key1");
             list.add(sample);
         }
-        assertEquals("[\"15:00\", \"\", \"15:02\", \"\", \"15:04\"]", list.getTimestampArray());
+        String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
+        String secondTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 2*60*1000));
+        String thirdTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 4*60*1000));
+        assertEquals("[\"" + timestamp + "\", \"\", \"" + secondTimestamp + "\", \"\", \"" + thirdTimestamp + "\"]", list.getTimestampArray());
     }
     
     @Test
