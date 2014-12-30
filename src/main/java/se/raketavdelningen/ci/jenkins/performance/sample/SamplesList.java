@@ -16,20 +16,36 @@ public class SamplesList extends ArrayList<AggregatedSample> {
     private static final DateFormat format = new SimpleDateFormat("HH:mm");
     
     public String getTimestampArray() {
-        Date date = new Date();
-        String[] result = new String[size()];
-        Arrays.fill(result, "\"\"");
-        date.setTime(get(0).getTimestamp());
-        result[0] = createDateLabel(date);
-        
-        int endIndex = size() - 1;
-        date.setTime(get(endIndex).getTimestamp());
-        result[endIndex] = createDateLabel(date);
-
-        int middleIndex = endIndex / 2;
-        date.setTime(get(middleIndex).getTimestamp());
-        result[middleIndex] = createDateLabel(date);
-        return Arrays.toString(result);
+        if (size() == 0) {
+            return "[]";
+        } else if (this.size() == 1) {
+            Date date = new Date();
+            date.setTime(get(0).getTimestamp());
+            return "[" + createDateLabel(date) + "]";
+        } else if (size() == 2) {
+            Date date = new Date();
+            date.setTime(get(0).getTimestamp());
+            String[] result = new String[2];
+            result[0] = createDateLabel(date);
+            date.setTime(get(1).getTimestamp());
+            result[1] = createDateLabel(date);
+            return Arrays.toString(result);
+        } else {
+            Date date = new Date();
+            String[] result = new String[size()];
+            Arrays.fill(result, "\"\"");
+            date.setTime(get(0).getTimestamp());
+            result[0] = createDateLabel(date);
+            
+            int endIndex = size() - 1;
+            date.setTime(get(endIndex).getTimestamp());
+            result[endIndex] = createDateLabel(date);
+    
+            int middleIndex = endIndex / 2;
+            date.setTime(get(middleIndex).getTimestamp());
+            result[middleIndex] = createDateLabel(date);
+            return Arrays.toString(result);
+        }
     }
 
     private String createDateLabel(Date date) {
