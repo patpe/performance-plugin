@@ -54,14 +54,14 @@ public class ReportPublisher extends Recorder {
 
     private SampleGroupFunction groupFunction;
 
-    private static final String filePattern = "**/*.csv";
-    
+    private static final String FILE_PATTERN = "**/*.csv";
+
     private boolean containsHeader;
-    
+
     private boolean printToBuildLog;
-    
+
     private boolean saveBuildResults;
-    
+
     @DataBoundConstructor
     public ReportPublisher() {
         this.aggregator = new TimeBasedAggregator();
@@ -99,7 +99,7 @@ public class ReportPublisher extends Recorder {
         }
         return Collections.<Action>emptyList();
     }
-    
+
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         PrintStream logger = listener.getLogger();
@@ -107,14 +107,14 @@ public class ReportPublisher extends Recorder {
             logger.println("Skipping parsing JMeter result files since result is equal to or worse than Failure");
             return true;
         }                
-        
-        List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), filePattern);
+
+        List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), FILE_PATTERN);
         SamplesMap samples = new SamplesMap();
-        
+
         for (FilePath file : files) {
             parseFile(logger, samples, file);
         }
-        
+
         Report report = getPerformanceReportToUpdate(build);
         ReportBuildAction action = new ReportBuildAction(samples, report, build.getProject());
         Set<String> keys = samples.keySet();
@@ -123,7 +123,7 @@ public class ReportPublisher extends Recorder {
             addEntryToLog(report, key, entry);
         }        
         build.addAction(action);
-        
+
         return true;
     }
 
@@ -157,7 +157,7 @@ public class ReportPublisher extends Recorder {
         }
         return report;
     }
-    
+
     private ReportEntry handleSamplesByKey(AbstractBuild<?, ?> build,
             PrintStream logger,
             SamplesMap aggregatedSamples,
@@ -202,7 +202,7 @@ public class ReportPublisher extends Recorder {
         }
         return totalAverage / (samples.size());
     }
-    
+
     private boolean isSuccess(List<AggregatedSample> samples) {
         for (AggregatedSample sample : samples) {
             if (!sample.isSuccess()) {
@@ -231,7 +231,7 @@ public class ReportPublisher extends Recorder {
         }
         return max;
     }
-    
+
     private void parseFile(PrintStream logger,
             SamplesMap samples,
             FilePath file) {
@@ -241,7 +241,7 @@ public class ReportPublisher extends Recorder {
             aggregator.initializeAggregatorFromFirstSample(sample);
             while (sample != null) {
                 if (isInNewAggregationPeriod(sample)) {
-                	aggregateAndStartNewPeriod(samples);
+                    aggregateAndStartNewPeriod(samples);
                 }
                 groupFunction.addSampleToGroup(sample);
                 sample = parser.getNextSample();
@@ -254,10 +254,10 @@ public class ReportPublisher extends Recorder {
     }
 
     private boolean isInNewAggregationPeriod(Sample sample) {
-    	return !aggregator.isSampleInCurrentAggregation(sample);
-	}
+        return !aggregator.isSampleInCurrentAggregation(sample);
+    }
 
-	private void aggregateAndStartNewPeriod(
+    private void aggregateAndStartNewPeriod(
             SamplesMap aggregatedSamples) {
         Set<String> groupKeys = groupFunction.getKeys();
         aggregateSamples(aggregatedSamples, groupKeys);
@@ -267,19 +267,19 @@ public class ReportPublisher extends Recorder {
 
     private void saveResultsToFile(String key,
             List<AggregatedSample> samples, String absolutePath, PrintStream logger) {
-    	final String fileName = "performance_report_" + key + ".csv";
-    	final String format = "%1$s,%2$s,%3$s,%4$s,%5$s,%6$s%n";
-    	logger.format("Writing results to %1$s/%2$s%n", absolutePath, fileName);
-    	try (
-    			FileWriter writer = new FileWriter(new File(absolutePath, fileName)); 
-    			Formatter formatter = new Formatter(writer)) {
-    		for (AggregatedSample sample : samples) {
-    			formatter.format(format, sample.getTimestamp(), sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
-    		}
-		} catch (IOException e) {
-			logger.format("Error occured when writing file %1$, message is %2$%n", fileName, e.getMessage());
-			throw new ReportException(e);
-		}
+        final String fileName = "performance_report_" + key + ".csv";
+        final String format = "%1$s,%2$s,%3$s,%4$s,%5$s,%6$s%n";
+        logger.format("Writing results to %1$s/%2$s%n", absolutePath, fileName);
+        try (
+                FileWriter writer = new FileWriter(new File(absolutePath, fileName)); 
+                Formatter formatter = new Formatter(writer)) {
+            for (AggregatedSample sample : samples) {
+                formatter.format(format, sample.getTimestamp(), sample.getMin(), sample.getAverage(), sample.getMax(), sample.getNrOfSamples(), sample.isSuccess());
+            }
+        } catch (IOException e) {
+            logger.format("Error occured when writing file %1$, message is %2$%n", fileName, e.getMessage());
+            throw new ReportException(e);
+        }
     }
 
     private void printToBuildLog(String key,
@@ -324,7 +324,7 @@ public class ReportPublisher extends Recorder {
     private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) 
             throws ReportException {
         List<FilePath> files = new ArrayList<FilePath>();
-        String parts[] = filePattern.split("\\s*[;:,]+\\s*");
+        String[] parts = filePattern.split("\\s*[;:,]+\\s*");
         try {
             for (String path : parts) {
                 FilePath[] filePaths = workspace.list(path);

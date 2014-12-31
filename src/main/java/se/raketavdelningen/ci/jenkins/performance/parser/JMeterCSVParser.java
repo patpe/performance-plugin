@@ -62,7 +62,7 @@ public class JMeterCSVParser extends ReportParser {
     }
 
     @Override
-    public Sample getNextSample() throws ReportException {
+    public Sample getNextSample() {
         try {
             String sampleLine = reader.readLine();
             if (sampleLine == null) {
