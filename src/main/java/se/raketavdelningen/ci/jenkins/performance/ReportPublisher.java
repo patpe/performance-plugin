@@ -86,7 +86,7 @@ public class ReportPublisher extends Recorder {
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
-        return BuildStepMonitor.BUILD;
+        return BuildStepMonitor.NONE;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class ReportPublisher extends Recorder {
         Object build = project.getLastSuccessfulBuild();
         if (build != null) {
             ReportBuildAction action = project.getLastSuccessfulBuild().getAction(ReportBuildAction.class);
-            Report report = (action != null ? action.getReport() : new Report());
+            Report report = action != null ? action.getReport() : new Report();
             return Collections.<Action>singleton(new ReportProjectAction(report));
         }
         return Collections.<Action>emptyList();
@@ -321,8 +321,7 @@ public class ReportPublisher extends Recorder {
      * @return
      * @throws ReportException
      */
-    private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) 
-            throws ReportException {
+    private List<FilePath> findAllPerformanceReports(FilePath workspace, String filePattern) {
         List<FilePath> files = new ArrayList<FilePath>();
         String[] parts = filePattern.split("\\s*[;:,]+\\s*");
         try {
