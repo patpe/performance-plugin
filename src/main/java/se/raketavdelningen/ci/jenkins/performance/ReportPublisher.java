@@ -26,8 +26,6 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -172,8 +170,9 @@ public class ReportPublisher extends Recorder {
         return new ReportEntry(
                 build.number, 
                 findMin(samples), 
-                calculateAverage(samples), 
-                findMax(samples), 
+                calculateAverage(samples),
+                findMax(samples),
+                calculate95Percentile(samples),
                 calculateNrOfSamples(samples),
                 calculateNrOfFailures(samples),
                 isSuccess(samples));
@@ -199,6 +198,14 @@ public class ReportPublisher extends Recorder {
         long totalAverage = 0;
         for (AggregatedSample sample : samples) {
             totalAverage+=sample.getAverage();
+        }
+        return totalAverage / (samples.size());
+    }
+    
+    private long calculate95Percentile(List<AggregatedSample> samples) {
+        long totalAverage = 0;
+        for (AggregatedSample sample : samples) {
+            totalAverage+=sample.getPercentile95();
         }
         return totalAverage / (samples.size());
     }

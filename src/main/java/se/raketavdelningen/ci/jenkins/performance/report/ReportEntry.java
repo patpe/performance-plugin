@@ -11,6 +11,8 @@ public class ReportEntry {
     
     private long max;
     
+    private long percentile95;
+    
     private long nrOfSamples;
     
     private long nrOfFailures;
@@ -20,19 +22,19 @@ public class ReportEntry {
     public ReportEntry() {
     }
     
-    public ReportEntry(int buildNr, long min, long average, long max,
+    public ReportEntry(int buildNr, long min, long average, long max, long percentile95,
             long nrOfSamples, long nrOfFailures, boolean success) {
         super();
         this.buildNr = buildNr;
         this.min = min;
         this.average = average;
         this.max = max;
+        this.percentile95 = percentile95;
         this.nrOfSamples = nrOfSamples;
         this.nrOfFailures = nrOfFailures;
         this.success = success;
     }
 
-//    @XmlAttribute(name = "buildnr")
     public int getBuildNr() {
         return buildNr;
     }
@@ -65,6 +67,14 @@ public class ReportEntry {
         this.max = max;
     }
  
+    public long getPercentile95() {
+        return percentile95;
+    }
+
+    public void setPercentile95(long percentile95) {
+        this.percentile95 = percentile95;
+    }
+
     public long getNrOfSamples() {
         return nrOfSamples;
     }

@@ -19,5 +19,5 @@ public abstract class Aggregator implements Describable<Aggregator> {
     
     public abstract boolean isSampleInCurrentAggregation(Sample sample);
     
-    public abstract AggregatedSample aggregatePerformanceSamples(List<Sample> samples, String key);    
+    public abstract AggregatedSample aggregatePerformanceSamples(List<Sample> samples, String key);
 }

@@ -26,7 +26,7 @@ public class SamplesListTest {
     @Test
     public void testGetTimestampArrayWithOneElement() {
         SamplesList list = new SamplesList();
-        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, true, 1000, 0, "key1");
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
         String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
         assertEquals("[\"" + timestamp + "\"]", list.getTimestampArray());
@@ -35,9 +35,9 @@ public class SamplesListTest {
     @Test
     public void testGetTimestampArrayWithTwoElements() {
         SamplesList list = new SamplesList();
-        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, true, 1000, 0, "key1");
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
-        sample = new AggregatedSample(DEFAULT_TIMESTAMP + 60*1000, 20, 1, 10, true, 1000, 0, "key1");
+        sample = new AggregatedSample(DEFAULT_TIMESTAMP + 60*1000, 20, 1, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
         String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
         String secondTimestamp = format.format(new Date(DEFAULT_TIMESTAMP + 60*1000));
@@ -48,7 +48,7 @@ public class SamplesListTest {
     public void testGetTimestampArrayEqualAmountOfElements() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 6; i++) {
-            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
@@ -61,7 +61,7 @@ public class SamplesListTest {
     public void testGetTimestampArrayOddAmountOfElements() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 5; i++) {
-            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP + (i*60*1000), 20, 1, 10, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         String timestamp = format.format(new Date(DEFAULT_TIMESTAMP));
@@ -74,7 +74,7 @@ public class SamplesListTest {
     public void testGetMinArray() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 6; i++) {
-            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, i, 10, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, i, 10, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         assertEquals("[0, 1, 2, 3, 4, 5]", list.getMinArray());
@@ -83,7 +83,7 @@ public class SamplesListTest {
     @Test
     public void testGetMinArrayFromListWithOneElement() {
         SamplesList list = new SamplesList();
-        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 5, 10, true, 1000, 0, "key1");
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 5, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
         assertEquals("[5]", list.getMinArray());
     }
@@ -98,7 +98,7 @@ public class SamplesListTest {
     public void testGetAverageArray() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 6; i++) {
-            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, i, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, i, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         assertEquals("[0, 1, 2, 3, 4, 5]", list.getAverageArray());
@@ -113,7 +113,7 @@ public class SamplesListTest {
     @Test
     public void testGetAverageArrayListWithOneElement() {
         SamplesList list = new SamplesList();
-        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, true, 1000, 0, "key1");
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
         assertEquals("[10]", list.getAverageArray());
     }
@@ -122,7 +122,7 @@ public class SamplesListTest {
     public void testGetMaxArray() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 6; i++) {
-            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, i, 10, 20, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, i, 10, 20, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         assertEquals("[0, 1, 2, 3, 4, 5]", list.getMaxArray());
@@ -137,8 +137,32 @@ public class SamplesListTest {
     @Test
     public void testGetMaxArrayListWithOneElement() {
         SamplesList list = new SamplesList();
-        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, true, 1000, 0, "key1");
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, 3, true, 1000, 0, "key1");
         list.add(sample);
         assertEquals("[20]", list.getMaxArray());
+    }
+    
+    @Test
+    public void testGetPercentile95Array() {
+        SamplesList list = new SamplesList();
+        for (int i = 0; i < 6; i++) {
+            AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 30, 10, 20, i, true, 1000, 0, "key1");
+            list.add(sample);
+        }
+        assertEquals("[0, 1, 2, 3, 4, 5]", list.getPercentile95Array());
+    }
+    
+    @Test
+    public void testGetPercentile95ArrayFromEmptyList() {
+        SamplesList list = new SamplesList();
+        assertEquals("[]", list.getPercentile95Array());
+    }
+
+    @Test
+    public void testGetPercentile95ArrayListWithOneElement() {
+        SamplesList list = new SamplesList();
+        AggregatedSample sample = new AggregatedSample(DEFAULT_TIMESTAMP, 20, 1, 10, 3, true, 1000, 0, "key1");
+        list.add(sample);
+        assertEquals("[3]", list.getPercentile95Array());
     }
 }

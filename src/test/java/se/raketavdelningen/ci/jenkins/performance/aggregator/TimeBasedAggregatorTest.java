@@ -112,6 +112,12 @@ public class TimeBasedAggregatorTest {
     	long averageTime = firstSample.getTimestamp();
     	assertEquals(averageTime, sample.getTimestamp());
     }
+    
+    @Test(timeout = 1000)
+    public void testAggregateMillionSamples() {
+        List<Sample> samples = initializeSampleListWithNoTimeDifference(1000000);
+        aggregator.aggregatePerformanceSamples(samples, "key");
+    }
 
     @Test
     public void testAggregateSamplesWithDifferentTimestamps() {
@@ -137,6 +143,41 @@ public class TimeBasedAggregatorTest {
     public void testGetDescriptor() {
     	assertNotNull(aggregator.getDescriptor());
     	assertNotNull(aggregator.getDescriptor().getDisplayName());
+    }
+    
+    @Test
+    public void testCalculatePercentile95() {
+        List<Sample> samples = initializeSampleList(100, 2);
+        AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "label");
+        assertEquals(95l, sample.getPercentile95());
+    }
+    
+    @Test
+    public void testCalculatePercentile95WithOneSample() {
+        List<Sample> samples = initializeSampleList(1, 2);
+        AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "label");
+        assertEquals(1l, sample.getPercentile95());
+    }
+
+    @Test
+    public void testCalculatePercentile95WithTwoSamples() {
+        List<Sample> samples = initializeSampleList(2, 2);
+        AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "label");
+        assertEquals(1l, sample.getPercentile95());
+    }
+    
+    @Test
+    public void testCalculatePercentile95WithThreeSamples() {
+        List<Sample> samples = initializeSampleList(3, 2);
+        AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "label");
+        assertEquals(2l, sample.getPercentile95());
+    }
+    
+    @Test
+    public void testCalculatePercentile95WithTenSamples() {
+        List<Sample> samples = initializeSampleList(10, 2);
+        AggregatedSample sample = aggregator.aggregatePerformanceSamples(samples, "label");
+        assertEquals(9l, sample.getPercentile95());
     }
     
     private List<Sample> initializeSampleListWithNoTimeDifference(int nrOfSamples) {

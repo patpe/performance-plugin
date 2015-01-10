@@ -87,4 +87,14 @@ public class SamplesList extends ArrayList<AggregatedSample> {
         }
         return Arrays.toString(result);
     }
+    
+    public String getPercentile95Array() {
+        Long[] result = new Long[size()];
+        int index = 0;
+        for (AggregatedSample sample : this) { 
+            result[index] = sample.getPercentile95();
+            index++;
+        }
+        return Arrays.toString(result);
+    }
 }

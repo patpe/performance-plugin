@@ -2,6 +2,7 @@ package se.raketavdelningen.ci.jenkins.performance.aggregator;
 
 import hudson.model.Descriptor;
 
+import java.util.Arrays;
 import java.util.List;
 
 import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
@@ -27,13 +28,14 @@ public class TimeBasedAggregator extends Aggregator {
 	public AggregatedSample aggregatePerformanceSamples(
 			List<Sample> samples, String key) {
 		long aggregatedTimestamp = calculateAggregatedTimestamp(samples);
-		long samplesCounter = 0;
-		long samplesErrorCounter = 0;
+		int samplesCounter = 0;
+		int samplesErrorCounter = 0;
 		long sumOfElapsed = 0;
 		boolean success = true;
 
 		long max = Long.MIN_VALUE;
 		long min = Long.MAX_VALUE;
+		long[] elapsedValues = new long[samples.size()];
 		for (Sample sample : samples) {
 			long elapsed = sample.getElapsed();
 			if (max < elapsed) {
@@ -43,6 +45,8 @@ public class TimeBasedAggregator extends Aggregator {
 				min = elapsed;
 			}
 
+			elapsedValues[samplesCounter] = sample.getElapsed();
+			
 			sumOfElapsed+=sample.getElapsed();
 			success = (success && sample.isSuccess());
 			samplesErrorCounter = (sample.isSuccess() ? samplesErrorCounter : samplesErrorCounter + 1);
@@ -51,11 +55,25 @@ public class TimeBasedAggregator extends Aggregator {
 
 		long averageElapsed = sumOfElapsed / samplesCounter;
 
-		return new AggregatedSample(aggregatedTimestamp, max, min, averageElapsed, 
-				success, samplesCounter, samplesErrorCounter, key);
+		return new AggregatedSample(aggregatedTimestamp, max, min, averageElapsed, findPercentile95(elapsedValues),
+				success, (long)samplesCounter, (long)samplesErrorCounter, key);
 	}
 
-	private long calculateAggregatedTimestamp(List<Sample> samples) {
+	private long findPercentile95(long[] elapsedValues) {
+	    if (elapsedValues.length > 1) {
+	        // Sort array
+	        Arrays.sort(elapsedValues);
+	        // Find and return index that represents 95th index in the array
+	        int percentile95Index = (int) Math.floor((elapsedValues.length -1) * 0.95);
+	        return elapsedValues[percentile95Index];
+	    } else if (elapsedValues.length == 1) {
+	        return elapsedValues[0];
+	    } else {
+	        throw new ReportException("No samples given to analyze");
+	    }
+    }
+
+    private long calculateAggregatedTimestamp(List<Sample> samples) {
 		if (samples.size() > 1) {
 			long firstTimestamp = samples.get(0).getTimestamp();
 			long lastTimestamp = samples.get(samples.size() - 1).getTimestamp();

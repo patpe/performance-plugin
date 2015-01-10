@@ -32,7 +32,7 @@ public class ReportBuildActionTest {
     public void testGetSamples() {
         SamplesList list = new SamplesList();
         for (int i = 0; i < 6; i++) {
-            AggregatedSample sample = new AggregatedSample(System.currentTimeMillis() + (i*60*1000), 20, 1, 10, true, 1000, 0, "key1");
+            AggregatedSample sample = new AggregatedSample(System.currentTimeMillis() + (i*60*1000), 20, 1, 10, 3, true, 1000, 0, "key1");
             list.add(sample);
         }
         

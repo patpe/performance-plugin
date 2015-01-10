@@ -10,6 +10,8 @@ public class AggregatedSample {
     
     private long average;
     
+    private long percentile95;
+    
     private boolean success;
     
     private long nrOfSamples;
@@ -19,12 +21,13 @@ public class AggregatedSample {
     private String key;
 
     public AggregatedSample(long timestamp, long max, long min,
-            long average, boolean success, long nrOfSamples, long nrOfFailures, String key) {
+            long average, long percentile95, boolean success, long nrOfSamples, long nrOfFailures, String key) {
         super();
         this.timestamp = timestamp;
         this.max = max;
         this.min = min;
         this.average = average;
+        this.percentile95 = percentile95;
         this.success = success;
         this.nrOfSamples = nrOfSamples;
         this.nrOfFailures = nrOfFailures;
@@ -61,6 +64,14 @@ public class AggregatedSample {
 
     public void setAverage(long average) {
         this.average = average;
+    }
+
+    public long getPercentile95() {
+        return percentile95;
+    }
+
+    public void setPercentile95(long percentile95) {
+        this.percentile95 = percentile95;
     }
 
     public boolean isSuccess() {

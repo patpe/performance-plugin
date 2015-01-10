@@ -21,24 +21,24 @@
                         data: ${reportLog.value.getMinArray()}
                     },
                     {
-                        label: "Average",
+                        label: "95%",
                         fillColor: "rgba(115,222,117,0.2)",
                         strokeColor: "rgba(115,222,117,1)",
                         pointColor: "rgba(115,222,117,1)",
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(115,222,117,1)",
-                        data: ${reportLog.value.getAverageArray()}
+                        data: ${reportLog.value.getPercentile95Array()}
                     },
                     {
-                        label: "Max",
+                        label: "Average",
                         fillColor: "rgba(235,143,129,0.2)",
                         strokeColor: "rgba(235,143,129,1)",
                         pointColor: "rgba(235,143,129,1)",
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(235,143,129,1)",
-                        data: ${reportLog.value.getMaxArray()}
+                        data: ${reportLog.value.getAverageArray()}
                     }]
                 };
                 new Chart(ctx).Line(data, {

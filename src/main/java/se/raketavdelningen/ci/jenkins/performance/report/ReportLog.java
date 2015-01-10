@@ -88,4 +88,19 @@ public class ReportLog extends ArrayList<ReportEntry> {
         }
         return Arrays.toString(result);        
     }
+    
+    /**
+     * Supports Chart.js
+     *  
+     * @return [1, 2, 3]
+     */
+    public String getPercentile95Array() {
+        long[] result = new long[size()];
+        int index = 0;
+        for (ReportEntry entry : this) {
+            result[index] = entry.getPercentile95();
+            index++;
+        }
+        return Arrays.toString(result);
+    }
 }
