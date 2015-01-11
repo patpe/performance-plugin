@@ -8,54 +8,80 @@
                 <script type="text/javascript">
                     Chart.defaults.global.animation = false;
                 </script>
-				<j:forEach var="samplesList" items="${it.samples}">
-				    <h4>${samplesList.key}</h4>
-                    <canvas id="${samplesList.key}-jmeter-chart" width="640" height="480"></canvas>
-                    <script type="text/javascript">
-                        var ctx = document.getElementById("${samplesList.key}-jmeter-chart").getContext("2d");
-                        var data = {
-                            labels: ${samplesList.value.getTimestampArray()},
-                            datasets: [
-                            {
-                                label: "Min",
-                                fillColor: "rgba(129,136,235,0.2)",
-                                strokeColor: "rgba(129,136,235,1)",
-                                pointColor: "rgba(129,136,235,1)",
-                                pointStrokeColor: "#fff",
-                                pointHighlightFill: "#fff",
-                                pointHighlightStroke: "rgba(129,136,235,1)",
-                                data: ${samplesList.value.getMinArray()}
-                            },
-                            {
-                                label: "95%",
-                                fillColor: "rgba(115,222,117,0.2)",
-                                strokeColor: "rgba(115,222,117,1)",
-                                pointColor: "rgba(115,222,117,1)",
-                                pointStrokeColor: "#fff",
-                                pointHighlightFill: "#fff",
-                                pointHighlightStroke: "rgba(115,222,117,1)",
-                                data: ${samplesList.value.getPercentile95Array()}
-                            },
-                            {
-                                label: "Average",
-                                fillColor: "rgba(235,143,129,0.2)",
-                                strokeColor: "rgba(235,143,129,1)",
-                                pointColor: "rgba(235,143,129,1)",
-                                pointStrokeColor: "#fff",
-                                pointHighlightFill: "#fff",
-                                pointHighlightStroke: "rgba(235,143,129,1)",
-                                data: ${samplesList.value.getAverageArray()}
-                            }]
-                        };
-                        new Chart(ctx).Line(data, {
-                            datasetFill: false,
-                            pointDot: false,
-                            bezierCurve: false,
-                            scaleShowGridLines: false
-                        });
-                    </script>
-                    <br />
-				</j:forEach>				
+                <div id="responsetime">
+					<j:forEach var="samplesList" items="${it.samples}">
+					    <h4>${samplesList.key}</h4>
+	                    <canvas id="${samplesList.key}-jmeter-chart" width="640" height="480"></canvas>
+	                    <script type="text/javascript">
+	                        var ctx = document.getElementById("${samplesList.key}-jmeter-chart").getContext("2d");
+	                        var data = {
+	                            labels: ${samplesList.value.getTimestampArray()},
+	                            datasets: [
+	                            {
+	                                label: "Min",
+	                                fillColor: "rgba(129,136,235,0.2)",
+	                                strokeColor: "rgba(129,136,235,1)",
+	                                pointColor: "rgba(129,136,235,1)",
+	                                pointStrokeColor: "#fff",
+	                                pointHighlightFill: "#fff",
+	                                pointHighlightStroke: "rgba(129,136,235,1)",
+	                                data: ${samplesList.value.getMinArray()}
+	                            },
+	                            {
+	                                label: "95%",
+	                                fillColor: "rgba(115,222,117,0.2)",
+	                                strokeColor: "rgba(115,222,117,1)",
+	                                pointColor: "rgba(115,222,117,1)",
+	                                pointStrokeColor: "#fff",
+	                                pointHighlightFill: "#fff",
+	                                pointHighlightStroke: "rgba(115,222,117,1)",
+	                                data: ${samplesList.value.getPercentile95Array()}
+	                            },
+	                            {
+	                                label: "Average",
+	                                fillColor: "rgba(235,143,129,0.2)",
+	                                strokeColor: "rgba(235,143,129,1)",
+	                                pointColor: "rgba(235,143,129,1)",
+	                                pointStrokeColor: "#fff",
+	                                pointHighlightFill: "#fff",
+	                                pointHighlightStroke: "rgba(235,143,129,1)",
+	                                data: ${samplesList.value.getAverageArray()}
+	                            }]
+	                        };
+	                        new Chart(ctx).Line(data, {
+	                            datasetFill: false,
+	                            pointDot: false,
+	                            bezierCurve: false,
+	                            scaleShowGridLines: false
+	                        });
+	                    </script>                    
+	                    <br />
+					</j:forEach>
+				</div>
+				<div id="distributions">
+					<j:forEach var="distribution" items="${it.distributions}">
+					    <h4>${distribution.key}</h4>
+	                    <canvas id="${distribution.key}-jmeter-dist-chart" width="640" height="480"></canvas>
+	                    <script type="text/javascript">
+	                        var ctx = document.getElementById("${distribution.key}-jmeter-dist-chart").getContext("2d");
+	                        var data = {
+	                            labels: ${distribution.value.getDistributionLabelsArray()},
+	                            datasets: [
+	                            {
+	                                label: "Distribution",
+	                                fillColor: "rgba(129,136,235,0.2)",
+	                                strokeColor: "rgba(129,136,235,1)",
+	                                highlightFill: "#fff",
+	                                highlightStroke: "rgba(129,136,235,1)",
+	                                data: ${distribution.value.getDistributionsSamplesArray()}
+	                            }]
+	                        };
+	                        new Chart(ctx).Bar(data, {
+	                        });
+	                    </script>
+	                    <br />
+					</j:forEach>
+				</div>
 			</div>
     	</l:main-panel>
   	</l:layout>		

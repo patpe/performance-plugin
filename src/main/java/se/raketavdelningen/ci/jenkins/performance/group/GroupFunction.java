@@ -8,7 +8,7 @@ import java.util.Set;
 
 import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
-public abstract class SampleGroupFunction {
+public abstract class GroupFunction {
 
     private Map<String, List<Sample>> samplesMap = new HashMap<>();
     

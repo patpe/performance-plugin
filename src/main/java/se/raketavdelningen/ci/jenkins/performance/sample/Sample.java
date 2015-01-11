@@ -4,18 +4,18 @@ public class Sample {
 
     private long timestamp;
     
-    private long elapsed;
+    private int elapsed;
     
     private boolean success;
     
-    private long bytes;
+    private int bytes;
     
     private String label;
     
     private String url;
 
-    public Sample(long timestamp, long elapsed,
-            boolean success, long bytes, String label, String url) {
+    public Sample(long timestamp, int elapsed,
+            boolean success, int bytes, String label, String url) {
         super();
         this.timestamp = timestamp;
         this.elapsed = elapsed;
@@ -33,11 +33,11 @@ public class Sample {
         this.timestamp = timestamp;
     }
 
-    public long getElapsed() {
+    public int getElapsed() {
         return elapsed;
     }
 
-    public void setElapsed(long elapsed) {
+    public void setElapsed(int elapsed) {
         this.elapsed = elapsed;
     }
 
@@ -49,11 +49,11 @@ public class Sample {
         this.success = success;
     }
 
-    public long getBytes() {
+    public int getBytes() {
         return bytes;
     }
 
-    public void setBytes(long bytes) {
+    public void setBytes(int bytes) {
         this.bytes = bytes;
     }
 

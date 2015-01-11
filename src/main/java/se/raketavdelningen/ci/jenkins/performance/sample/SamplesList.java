@@ -12,15 +12,19 @@ public class SamplesList extends ArrayList<AggregatedSample> {
      * 
      */
     private static final long serialVersionUID = 6051136143483379711L;
-    
+
     private static final DateFormat LABEL_FORMAT = new SimpleDateFormat("HH:mm");
-    
+
     private static final int EMPTY = 0;
-    
+
     private static final int ONE_ELEMENT = 1;
-    
+
     private static final int TWO_ELEMENTS = 2;
     
+    public SamplesList() {
+        super();
+    }
+
     public String getTimestampArray() {
         if (size() == EMPTY) {
             return "[]";
@@ -42,11 +46,11 @@ public class SamplesList extends ArrayList<AggregatedSample> {
             Arrays.fill(result, "\"\"");
             date.setTime(get(0).getTimestamp());
             result[0] = createDateLabel(date);
-            
+
             int endIndex = size() - 1;
             date.setTime(get(endIndex).getTimestamp());
             result[endIndex] = createDateLabel(date);
-    
+
             int middleIndex = endIndex / 2;
             date.setTime(get(middleIndex).getTimestamp());
             result[middleIndex] = createDateLabel(date);
@@ -57,7 +61,7 @@ public class SamplesList extends ArrayList<AggregatedSample> {
     private String createDateLabel(Date date) {
         return "\"" + LABEL_FORMAT.format(date) + "\"";
     }
-    
+
     public String getMinArray() {
         Long[] result = new Long[size()];
         int index = 0;
@@ -67,7 +71,7 @@ public class SamplesList extends ArrayList<AggregatedSample> {
         }
         return Arrays.toString(result);
     }
-    
+
     public String getAverageArray() {
         Long[] result = new Long[size()];
         int index = 0;
@@ -77,7 +81,7 @@ public class SamplesList extends ArrayList<AggregatedSample> {
         }
         return Arrays.toString(result);
     }
-    
+
     public String getMaxArray() {
         Long[] result = new Long[size()];
         int index = 0;
@@ -87,7 +91,7 @@ public class SamplesList extends ArrayList<AggregatedSample> {
         }
         return Arrays.toString(result);
     }
-    
+
     public String getPercentile95Array() {
         Long[] result = new Long[size()];
         int index = 0;

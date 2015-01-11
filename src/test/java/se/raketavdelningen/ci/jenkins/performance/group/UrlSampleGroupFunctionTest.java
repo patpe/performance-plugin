@@ -22,7 +22,7 @@ public class UrlSampleGroupFunctionTest {
 	
 	@Test
 	public void testGetSampleGroupKey() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		assertEquals("url", group.getSampleGroupKey(sample));
@@ -30,7 +30,7 @@ public class UrlSampleGroupFunctionTest {
 
 	@Test
 	public void testAddSampleToGroup() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		group.addSampleToGroup(sample);
@@ -41,7 +41,7 @@ public class UrlSampleGroupFunctionTest {
 	
 	@Test
 	public void testAddSamplesToGroup() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		addSampleWithUrlToGroup("url1", group);
 		addSampleWithUrlToGroup("url2", group);
@@ -62,7 +62,7 @@ public class UrlSampleGroupFunctionTest {
 
 	@Test
 	public void testAddMultipleSamplesToGroup() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		for (int i = 0; i < 100; i++) {
 			addSampleWithUrlToGroup("url1", group);
@@ -78,14 +78,14 @@ public class UrlSampleGroupFunctionTest {
 	}
 	
 	private void addSampleWithUrlToGroup(String url,
-			SampleGroupFunction group) {
+			GroupFunction group) {
 		Sample sample = new Sample(1, 1, true, 1, "label", url);
 		group.addSampleToGroup(sample);
 	}
 
 	@Test
 	public void testGetKeys() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		addSampleWithUrlToGroup("url1", group);
 		addSampleWithUrlToGroup("url2", group);
@@ -98,7 +98,7 @@ public class UrlSampleGroupFunctionTest {
 
 	@Test
 	public void testGetSamples() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		addSampleWithUrlToGroup("url1", group);
 		addSampleWithUrlToGroup("url2", group);
@@ -122,7 +122,7 @@ public class UrlSampleGroupFunctionTest {
 	
 	@Test
 	public void testGetMultipleSamples() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		for (int i = 0; i < 100; i++) {
 			addSampleWithUrlToGroup("url1", group);
@@ -150,7 +150,7 @@ public class UrlSampleGroupFunctionTest {
 
 	@Test
 	public void testClearGroups() {
-		SampleGroupFunction group = new UrlSampleGroupFunction();
+		GroupFunction group = new UrlSampleGroupFunction();
 		
 		addSampleWithUrlToGroup("url1", group);
 		addSampleWithUrlToGroup("url2", group);

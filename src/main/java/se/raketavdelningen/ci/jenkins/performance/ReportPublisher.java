@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.time.DateFormatUtils;
@@ -34,8 +35,8 @@ import se.raketavdelningen.ci.jenkins.performance.action.ReportProjectAction;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.Aggregator;
 import se.raketavdelningen.ci.jenkins.performance.aggregator.TimeBasedAggregator;
 import se.raketavdelningen.ci.jenkins.performance.exception.ReportException;
+import se.raketavdelningen.ci.jenkins.performance.group.GroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.group.LabelSampleGroupFunction;
-import se.raketavdelningen.ci.jenkins.performance.group.SampleGroupFunction;
 import se.raketavdelningen.ci.jenkins.performance.parser.JMeterCSVParser;
 import se.raketavdelningen.ci.jenkins.performance.parser.ReportParser;
 import se.raketavdelningen.ci.jenkins.performance.report.Report;
@@ -43,14 +44,17 @@ import se.raketavdelningen.ci.jenkins.performance.report.ReportEntry;
 import se.raketavdelningen.ci.jenkins.performance.report.ReportLog;
 import se.raketavdelningen.ci.jenkins.performance.sample.AggregatedSample;
 import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
+import se.raketavdelningen.ci.jenkins.performance.sample.SamplesDistribution;
+import se.raketavdelningen.ci.jenkins.performance.sample.SamplesDistributionMap;
 import se.raketavdelningen.ci.jenkins.performance.sample.SamplesList;
 import se.raketavdelningen.ci.jenkins.performance.sample.SamplesMap;
 
+@SuppressWarnings("unchecked")
 public class ReportPublisher extends Recorder {
 
     private Aggregator aggregator;
 
-    private SampleGroupFunction groupFunction;
+    private GroupFunction groupFunction;
 
     private static final String FILE_PATTERN = "**/*.csv";
 
@@ -104,22 +108,23 @@ public class ReportPublisher extends Recorder {
         if (build.getResult().isWorseOrEqualTo(Result.FAILURE)) {
             logger.println("Skipping parsing JMeter result files since result is equal to or worse than Failure");
             return true;
-        }                
+        }
 
         List<FilePath> files = findAllPerformanceReports(build.getWorkspace(), FILE_PATTERN);
         SamplesMap samples = new SamplesMap();
+        SamplesDistributionMap distributions = new SamplesDistributionMap();
 
         for (FilePath file : files) {
-            parseFile(logger, samples, file);
+            parseFile(logger, samples, distributions, file);
         }
 
         Report report = getPerformanceReportToUpdate(build);
-        ReportBuildAction action = new ReportBuildAction(samples, report, build.getProject());
+        ReportBuildAction action = new ReportBuildAction(samples, distributions, report, build.getProject());
         Set<String> keys = samples.keySet();
         for (String key : keys) {
             ReportEntry entry = handleSamplesByKey(build, logger, samples, key);
             addEntryToLog(report, key, entry);
-        }        
+        }
         build.addAction(action);
 
         return true;
@@ -241,12 +246,15 @@ public class ReportPublisher extends Recorder {
 
     private void parseFile(PrintStream logger,
             SamplesMap samples,
+            SamplesDistributionMap distributions,
             FilePath file) {
         logger.format("Parsing file %1$s%n", file.getName());
         try (ReportParser parser = new JMeterCSVParser(file, containsHeader)) {
+            populatePercentileLookupMap(parser, distributions);
             Sample sample = parser.getNextSample();
             aggregator.initializeAggregatorFromFirstSample(sample);
             while (sample != null) {
+                addSampleToDistribution(distributions, sample);
                 if (isInNewAggregationPeriod(sample)) {
                     aggregateAndStartNewPeriod(samples);
                 }
@@ -257,6 +265,18 @@ public class ReportPublisher extends Recorder {
             logger.format("Done parsing file %1s%n", file.getName());
         } catch (Exception e) {
             logger.format("Couldn't parse file %1s, skipping. Message was %2s%n", file.getName(), e.getMessage());
+        }
+    }
+
+    private void addSampleToDistribution(SamplesDistributionMap distribution,
+            Sample sample) {
+        distribution.get(groupFunction.getSampleGroupKey(sample)).addSampleToDistribution(sample);
+    }
+
+    private void populatePercentileLookupMap(ReportParser parser, SamplesDistributionMap distributions) {
+        Map<String, Integer> maxElapsedTimes = parser.findMaxPerKey(groupFunction);
+        for (Map.Entry<String, Integer> entry : maxElapsedTimes.entrySet()) {
+            distributions.put(entry.getKey(), new SamplesDistribution(entry.getValue()));
         }
     }
 

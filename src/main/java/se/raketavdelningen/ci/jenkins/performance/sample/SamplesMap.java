@@ -8,4 +8,8 @@ public class SamplesMap extends HashMap<String, SamplesList> {
      * 
      */
     private static final long serialVersionUID = 5862018802291372290L;
+    
+    public SamplesMap() {
+        super();
+    }
 }

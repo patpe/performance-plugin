@@ -4,19 +4,23 @@ import hudson.model.Action;
 import hudson.model.AbstractProject;
 import se.raketavdelningen.ci.jenkins.performance.ReportConstants;
 import se.raketavdelningen.ci.jenkins.performance.report.Report;
+import se.raketavdelningen.ci.jenkins.performance.sample.SamplesDistributionMap;
 import se.raketavdelningen.ci.jenkins.performance.sample.SamplesMap;
 
 public class ReportBuildAction implements Action {
 
     private SamplesMap samples = null;
     
+    private SamplesDistributionMap distributions = null;
+    
     private Report report = null;
 
     private AbstractProject<?, ?> project;
     
-    public ReportBuildAction(SamplesMap samples, Report report, AbstractProject<?, ?> project) {
+    public ReportBuildAction(SamplesMap samples, SamplesDistributionMap distributions, Report report, AbstractProject<?, ?> project) {
         super();
         this.samples = samples;
+        this.distributions = distributions;
         this.report = report;
         this.project = project;
     }
@@ -55,5 +59,17 @@ public class ReportBuildAction implements Action {
 
     public String getUrlName() {
         return ReportConstants.PLUGIN_URL;
+    }
+
+    public SamplesDistributionMap getDistributions() {
+        // Compatible with builds where this functionality wasn't available
+        if (distributions == null) {
+            return new SamplesDistributionMap();
+        }
+        return distributions;
+    }
+
+    public void setDistributions(SamplesDistributionMap distributions) {
+        this.distributions = distributions;
     }
 }

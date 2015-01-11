@@ -22,7 +22,7 @@ public class LabelSampleGroupFunctionTest {
 	
 	@Test
 	public void testGetSampleGroupKey() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		assertEquals("label", group.getSampleGroupKey(sample));
@@ -30,7 +30,7 @@ public class LabelSampleGroupFunctionTest {
 
 	@Test
 	public void testAddSampleToGroup() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		Sample sample = new Sample(1, 1, true, 1, "label", "url");
 		group.addSampleToGroup(sample);
@@ -41,7 +41,7 @@ public class LabelSampleGroupFunctionTest {
 	
 	@Test
 	public void testAddSamplesToGroup() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		addSampleWithLabelToGroup("label1", group);
 		addSampleWithLabelToGroup("label2", group);
@@ -62,7 +62,7 @@ public class LabelSampleGroupFunctionTest {
 
 	@Test
 	public void testAddMultipleSamplesToGroup() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		for (int i = 0; i < 100; i++) {
 			addSampleWithLabelToGroup("label1", group);
@@ -78,14 +78,14 @@ public class LabelSampleGroupFunctionTest {
 	}
 	
 	private void addSampleWithLabelToGroup(String label,
-			SampleGroupFunction group) {
+			GroupFunction group) {
 		Sample sample = new Sample(1, 1, true, 1, label, "url");
 		group.addSampleToGroup(sample);
 	}
 
 	@Test
 	public void testGetKeys() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		addSampleWithLabelToGroup("label1", group);
 		addSampleWithLabelToGroup("label2", group);
@@ -98,7 +98,7 @@ public class LabelSampleGroupFunctionTest {
 
 	@Test
 	public void testGetSamples() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		addSampleWithLabelToGroup("label1", group);
 		addSampleWithLabelToGroup("label2", group);
@@ -122,7 +122,7 @@ public class LabelSampleGroupFunctionTest {
 	
 	@Test
 	public void testGetMultipleSamples() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		for (int i = 0; i < 100; i++) {
 			addSampleWithLabelToGroup("label1", group);
@@ -150,7 +150,7 @@ public class LabelSampleGroupFunctionTest {
 
 	@Test
 	public void testClearGroups() {
-		SampleGroupFunction group = new LabelSampleGroupFunction();
+		GroupFunction group = new LabelSampleGroupFunction();
 		
 		addSampleWithLabelToGroup("label1", group);
 		addSampleWithLabelToGroup("label2", group);

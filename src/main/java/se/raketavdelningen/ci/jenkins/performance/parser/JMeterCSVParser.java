@@ -13,6 +13,10 @@ import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
 
 public class JMeterCSVParser extends ReportParser {
     
+    private FilePath file;
+    
+    private boolean containsHeader;
+    
     private BufferedReader reader;
        
     private int timestampIndex = 0;
@@ -28,6 +32,16 @@ public class JMeterCSVParser extends ReportParser {
     private int urlIndex = 5;
     
     public JMeterCSVParser(FilePath file, boolean containsHeader) {
+        try {
+            this.file = file;
+            this.containsHeader = true;
+            initializeStream(containsHeader);
+        } catch (Exception e) {
+            throw new ReportException(e);
+        }
+    }
+
+    private void initializeStream(boolean containsHeader) {
         try {
             InputStream ins = file.read();
             reader = new BufferedReader(new InputStreamReader(ins));
@@ -72,9 +86,9 @@ public class JMeterCSVParser extends ReportParser {
             String[] sampleValues = sampleLine.split(JMeterFieldNames.CSV_FILE_DELIMITER);
             return new Sample(
                     Long.valueOf(sampleValues[timestampIndex]),
-                    Long.valueOf(sampleValues[elapsedIndex]),
+                    Integer.valueOf(sampleValues[elapsedIndex]),
                     Boolean.valueOf(sampleValues[successIndex]),
-                    Long.valueOf(sampleValues[bytesIndex]),
+                    Integer.valueOf(sampleValues[bytesIndex]),
                     sampleValues[labelIndex],
                     sampleValues[urlIndex]);
         } catch (IOException e) {
@@ -88,8 +102,18 @@ public class JMeterCSVParser extends ReportParser {
             try {
                 reader.close();
             } catch (Exception e) {
-                // Ignore...
+                throw new ReportException(e);
             }
+        }
+    }
+
+    @Override
+    public void resetStream() {
+        try {
+            close();
+            initializeStream(containsHeader);
+        } catch (IOException e) {
+            throw new ReportException(e);
         }
     }
 }
