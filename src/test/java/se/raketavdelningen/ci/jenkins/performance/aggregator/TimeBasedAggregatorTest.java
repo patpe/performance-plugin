@@ -21,7 +21,9 @@ import se.raketavdelningen.ci.jenkins.performance.sample.Sample;
  */
 public class TimeBasedAggregatorTest {
 
-    Aggregator aggregator = new TimeBasedAggregator();
+    private Aggregator aggregator = new TimeBasedAggregator();
+    
+    private List<Sample> timeSamples = initializeSampleListWithNoTimeDifference(1000000);
     
     @Test
     public void testIsSampleInCurrentAggregation() {
@@ -115,8 +117,7 @@ public class TimeBasedAggregatorTest {
     
     @Test(timeout = 1000)
     public void testAggregateMillionSamples() {
-        List<Sample> samples = initializeSampleListWithNoTimeDifference(1000000);
-        aggregator.aggregatePerformanceSamples(samples, "key");
+        aggregator.aggregatePerformanceSamples(timeSamples, "key");
     }
 
     @Test
