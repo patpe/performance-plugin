@@ -11,7 +11,7 @@
 
     <groupId>se.raketavdelningen.ci</groupId>
     <artifactId>performance-report</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <packaging>hpi</packaging>
 
     <properties>
