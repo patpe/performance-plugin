@@ -45,7 +45,6 @@ public class SamplesDistribution {
         this.percentile70 = (int) (maxValue * 0.7);
         this.percentile90 = (int) (maxValue * 0.9);
         this.max = maxValue;
-        System.out.println(this);
     }
 
     public int getPercentile10() {
@@ -171,18 +170,5 @@ public class SamplesDistribution {
         samples[8] = String.valueOf(nrAbove90Percentile);
         samples[9] = EMPTY_FOR_LABEL;
         return Arrays.toString(samples);
-    }
-
-    @Override
-    public String toString() {
-        return "SamplesDistribution [nrBelow10Percentile="
-                + nrBelow10Percentile + ", percentile10=" + percentile10
-                + ", nrBetween10And30Percentile=" + nrBetween10And30Percentile
-                + ", percentile30=" + percentile30
-                + ", nrBetween30And70Percentile=" + nrBetween30And70Percentile
-                + ", percentile70=" + percentile70
-                + ", nrBetween70And90Percentile=" + nrBetween70And90Percentile
-                + ", percentile90=" + percentile90 + ", nrAbove90Percentile="
-                + nrAbove90Percentile + ", max=" + max + "]";
     }
 }
