@@ -143,7 +143,7 @@ public class SamplesDistribution {
     }
     
     public String getDistributionLabelsArray() {
-        String[] labels = new String[10];
+        String[] labels = new String[9];
         labels[0] = EMPTY_FOR_DATAPOINT;
         labels[1] = String.valueOf(percentile10);
         labels[2] = EMPTY_FOR_DATAPOINT;
@@ -153,12 +153,11 @@ public class SamplesDistribution {
         labels[6] = EMPTY_FOR_DATAPOINT;
         labels[7] = String.valueOf(percentile90);
         labels[8] = EMPTY_FOR_DATAPOINT;
-        labels[9] = String.valueOf(max);
         return Arrays.toString(labels);
     }
     
     public String getDistributionsSamplesArray() {
-        String[] samples = new String[10];
+        String[] samples = new String[9];
         samples[0] = String.valueOf(nrBelow10Percentile);
         samples[1] = EMPTY_FOR_LABEL;
         samples[2] = String.valueOf(nrBetween10And30Percentile);
@@ -168,7 +167,6 @@ public class SamplesDistribution {
         samples[6] = String.valueOf(nrBetween70And90Percentile);
         samples[7] = EMPTY_FOR_LABEL;
         samples[8] = String.valueOf(nrAbove90Percentile);
-        samples[9] = EMPTY_FOR_LABEL;
         return Arrays.toString(samples);
     }
 }

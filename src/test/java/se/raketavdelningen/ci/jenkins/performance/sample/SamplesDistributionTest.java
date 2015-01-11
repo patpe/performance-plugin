@@ -29,4 +29,19 @@ public class SamplesDistributionTest {
         assertEquals(2, dist.getNrBetween70And90Percentile());
         assertEquals(2, dist.getNrAbove90Percentile());
     }
+    
+    @Test
+    public void testGetDistributionLabelsArray() {
+        SamplesDistribution dist = new SamplesDistribution(10);
+        assertEquals("[\"\", 1, \"\", 3, \"\", 7, \"\", 9, \"\"]", dist.getDistributionLabelsArray());
+    }
+    
+    @Test
+    public void testGetDistributionsSamplesArray() {
+        SamplesDistribution dist = new SamplesDistribution(10);
+        for (int i = 0; i <= 10; i++) {
+            dist.addSampleToDistribution(new Sample(1l, i, true, i, "key1", "url1"));
+        }
+        assertEquals("[1, 0, 2, 0, 4, 0, 2, 0, 2]", dist.getDistributionsSamplesArray());
+    }
 }

@@ -9,6 +9,7 @@
                     Chart.defaults.global.animation = false;
                 </script>
                 <div id="responsetime">
+                	Displaying min, average and 95th percentile response times.
 					<j:forEach var="samplesList" items="${it.samples}">
 					    <h4>${samplesList.key}</h4>
 	                    <canvas id="${samplesList.key}-jmeter-chart" width="640" height="480"></canvas>
@@ -59,6 +60,7 @@
 					</j:forEach>
 				</div>
 				<div id="distributions">
+					Displaying nr of samples below, between or over specific response times (10%, 30%, 70% and 90% of max).
 					<j:forEach var="distribution" items="${it.distributions}">
 					    <h4>${distribution.key}</h4>
 	                    <canvas id="${distribution.key}-jmeter-dist-chart" width="640" height="480"></canvas>
